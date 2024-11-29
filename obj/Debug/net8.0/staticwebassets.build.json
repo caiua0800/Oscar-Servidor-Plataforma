@@ -1,0 +1,11 @@
+{
+  "Version": 1,
+  "Hash": "4fc0oH5yIBfYdGU1j74FQkQnxYrjlC/2IphdJlJ+jK8=",
+  "Source": "DotnetBackend",
+  "BasePath": "_content/DotnetBackend",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [],
+  "Assets": []
+}
