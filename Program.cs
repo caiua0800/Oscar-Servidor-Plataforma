@@ -28,7 +28,10 @@ builder.Services.AddSingleton<MongoDbService>();
 // Configuração do CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", builder => builder.WithOrigins("http://localhost:3000", "http://localhost:3001").AllowAnyMethod().AllowAnyHeader());
+    options.AddPolicy("AllowAllOrigins", builder =>
+        builder.AllowAnyOrigin()  // Permita todos os domínios
+               .AllowAnyMethod()  // Permita todos os métodos (GET, POST, etc.)
+               .AllowAnyHeader()); // Permita todos os cabeçalhos
 });
 
 builder.Services.AddScoped<VendaService>();
