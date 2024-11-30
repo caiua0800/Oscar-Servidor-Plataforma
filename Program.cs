@@ -29,9 +29,9 @@ builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", builder =>
-        builder.WithOrigins("https://adminoscar.modelodesoftwae.com") // Permita apenas o domínio específico
-               .AllowAnyMethod()  // Permita todos os métodos (GET, POST, etc.)
-               .AllowAnyHeader()); // Permita todos os cabeçalhos
+        builder.AllowAnyOrigin()   // Permite todas as origens
+               .AllowAnyMethod()   // Permite todos os métodos (GET, POST, etc.)
+               .AllowAnyHeader());  // Permite todos os cabeçalhos
 });
 
 builder.Services.AddScoped<VendaService>();
