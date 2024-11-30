@@ -1,7 +1,12 @@
 using MongoDB.Driver;
 using DotnetBackend.Models;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Text;
+
 
 namespace DotnetBackend.Services
 {
@@ -42,20 +47,16 @@ namespace DotnetBackend.Services
 
                 if (purchase.PercentageProfit > 0)
                 {
-                    Console.WriteLine("O contrato possui rendimento personalizado");
                     gain = purchase.PercentageProfit;
                 }
                 else if (client.ClientProfit > 0)
                 {
-                    Console.WriteLine("O cliente possui rendimento padrão");
                     gain = (double)client.ClientProfit;
                 }
                 else
                 {
-                    Console.WriteLine("Rendimento do contrato setado com 150%");
                     gain = 1.5;
                 }
-
             }
             else
             {
@@ -68,15 +69,50 @@ namespace DotnetBackend.Services
             purchase.TotalPrice = (purchase.Quantity * value);
             purchase.AmountPaid = (purchase.Quantity * value) - ((purchase.Quantity * value) * purchase.Discount);
             purchase.FinalIncome = purchase.Quantity * value * (decimal)gain;
-            purchase.EndContractDate = purchase.EndContractDate;
             purchase.CurrentIncome = 0;
             purchase.AmountWithdrawn = 0;
             purchase.UnityPrice = value;
             purchase.Description = descrip;
             TimeZoneInfo brtZone = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
             DateTime currentBrasiliaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, brtZone);
-            purchase.PurchaseDate = currentBrasiliaTime; purchase.ProductName = title;
+            purchase.PurchaseDate = currentBrasiliaTime;
+            purchase.ProductName = title;
             purchase.Status = 1;
+
+            // Chamada à API PIX
+            using (var httpClient = new HttpClient())
+            {
+                var requestPayload = new
+                {
+                    transaction_amount = purchase.AmountPaid,
+                    description = "Pagamento de Teste",
+                    paymentMethodId = "pix",
+                    email = client.Email,
+                    identificationType = "CPF",
+                    number = client.Id
+                };
+
+                var jsonContent = JsonSerializer.Serialize(requestPayload);
+                var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await httpClient.PostAsync("http://servidoroscar.modelodesoftwae.com:3030/pix", httpContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    var pixResponse = JsonSerializer.Deserialize<PixResponse>(responseBody);
+
+                    purchase.TicketPayment = pixResponse.PointOfInteraction.TransactionData.TicketUrl;
+                    purchase.QrCode = pixResponse.PointOfInteraction.TransactionData.QrCode;
+                    purchase.QrCodeBase64 = pixResponse.PointOfInteraction.TransactionData.QrCodeBase64;
+                    purchase.TicketId = pixResponse.Id; 
+                    console.WriteLine(TicketPayment);
+                }
+                else
+                {
+                    throw new Exception($"Falha na requisição PIX: {response.ReasonPhrase}");
+                }
+            }
 
             await _purchases.InsertOneAsync(purchase);
             var extract = new Extract("Compra", purchase.TotalPrice, purchase.ClientId);

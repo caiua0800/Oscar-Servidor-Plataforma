@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = DotnetBackend
+build_property.ProjectDir = /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 

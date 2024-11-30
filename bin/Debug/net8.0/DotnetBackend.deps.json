@@ -9,6 +9,7 @@
       "DotnetBackend/1.0.0": {
         "dependencies": {
           "AWSSDK.S3": "3.7.407.1",
+          "MercadoPago": "1.0.4477.31589",
           "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.8",
           "Microsoft.AspNetCore.Cors": "2.2.0",
           "Microsoft.AspNetCore.OpenApi": "8.0.8",
@@ -62,6 +63,17 @@
           "lib/net5.0/DnsClient.dll": {
             "assemblyVersion": "1.6.1.0",
             "fileVersion": "1.6.1.0"
+          }
+        }
+      },
+      "MercadoPago/1.0.4477.31589": {
+        "dependencies": {
+          "RestSharp": "102.7.0"
+        },
+        "runtime": {
+          "lib/MercadoPago.dll": {
+            "assemblyVersion": "1.0.4477.31589",
+            "fileVersion": "0.0.0.0"
           }
         }
       },
@@ -455,6 +467,17 @@
           "lib/net8.0/Quartz.Extensions.DependencyInjection.dll": {
             "assemblyVersion": "3.13.1.0",
             "fileVersion": "3.13.1.0"
+          }
+        }
+      },
+      "RestSharp/102.7.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "13.0.3"
+        },
+        "runtime": {
+          "lib/net35/RestSharp.dll": {
+            "assemblyVersion": "102.7.0.0",
+            "fileVersion": "102.7.0.0"
           }
         }
       },
@@ -995,6 +1018,13 @@
       "path": "dnsclient/1.6.1",
       "hashPath": "dnsclient.1.6.1.nupkg.sha512"
     },
+    "MercadoPago/1.0.4477.31589": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-GX1NSZaDdUcxmBkCEmaoCkJo/+FtZy0RmKbV2Yw9UBf9+2O2kULDhKWEdpWH23zsUoJunXb3taAlmqi5nMWEBw==",
+      "path": "mercadopago/1.0.4477.31589",
+      "hashPath": "mercadopago.1.0.4477.31589.nupkg.sha512"
+    },
     "Microsoft.AspNetCore.Authentication.Abstractions/2.2.0": {
       "type": "package",
       "serviceable": true,
@@ -1344,6 +1374,13 @@
       "sha512": "sha512-I3uXVIYMEo00TrEzzHG3koWNTGdinPGjvgBWse7SqMt3ZW7qlKBXB4a5bJsxkKSMjAs4i2Ykx2cJSi/r6zhiCw==",
       "path": "quartz.extensions.dependencyinjection/3.13.1",
       "hashPath": "quartz.extensions.dependencyinjection.3.13.1.nupkg.sha512"
+    },
+    "RestSharp/102.7.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-G5PnwhT5d92i75cFP4ql+MZXs0AmRCnzV3BDNr01WT1SkY8QODttbJBz2tNJdLcKLuWfhf88/F6ThklStL9Yyw==",
+      "path": "restsharp/102.7.0",
+      "hashPath": "restsharp.102.7.0.nupkg.sha512"
     },
     "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.2": {
       "type": "package",

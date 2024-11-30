@@ -47,6 +47,10 @@
               "target": "Package",
               "version": "[3.7.407.1, )"
             },
+            "MercadoPago": {
+              "target": "Package",
+              "version": "[1.0.4477.31589, )"
+            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[8.0.8, )"

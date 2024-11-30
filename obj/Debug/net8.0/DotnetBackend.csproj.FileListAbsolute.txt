@@ -109,6 +109,14 @@
 /Users/caiuamello/Desktop/Desenvolvimento/GOLDEN BRASIL/DIAMANTES/BackendDiamantes/bin/Debug/net8.0/Newtonsoft.Json.dll
 /Users/caiuamello/Desktop/Desenvolvimento/GOLDEN BRASIL/DIAMANTES/BackendDiamantes/bin/Debug/net8.0/Quartz.dll
 /Users/caiuamello/Desktop/Desenvolvimento/GOLDEN BRASIL/DIAMANTES/BackendDiamantes/bin/Debug/net8.0/Quartz.Extensions.DependencyInjection.dll
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.csproj.AssemblyReference.cache
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.GeneratedMSBuildEditorConfig.editorconfig
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.AssemblyInfoInputs.cache
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.AssemblyInfo.cs
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.csproj.CoreCompileInputs.cache
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.MvcApplicationPartsAssemblyInfo.cs
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.MvcApplicationPartsAssemblyInfo.cache
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.sourcelink.json
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/appsettings.Development.json
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/appsettings.json
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/DotnetBackend
@@ -117,8 +125,10 @@
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/DotnetBackend.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/DotnetBackend.pdb
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/AWSSDK.Core.dll
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/AWSSDK.S3.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/AWSSDK.SecurityToken.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/DnsClient.dll
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/MercadoPago.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Microsoft.AspNetCore.OpenApi.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
@@ -135,23 +145,18 @@
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Newtonsoft.Json.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Quartz.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Quartz.Extensions.DependencyInjection.dll
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/RestSharp.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/SharpCompress.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Snappier.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Swashbuckle.AspNetCore.Swagger.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerGen.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Swashbuckle.AspNetCore.SwaggerUI.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/System.Net.WebSockets.WebSocketProtocol.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/ZstdSharp.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/runtimes/linux/native/libmongocrypt.so
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/runtimes/osx/native/libmongocrypt.dylib
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/runtimes/win/native/mongocrypt.dll
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.csproj.AssemblyReference.cache
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.GeneratedMSBuildEditorConfig.editorconfig
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.AssemblyInfoInputs.cache
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.AssemblyInfo.cs
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.csproj.CoreCompileInputs.cache
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.MvcApplicationPartsAssemblyInfo.cs
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.MvcApplicationPartsAssemblyInfo.cache
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/staticwebassets.build.json
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/staticwebassets.development.json
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/staticwebassets/msbuild.DotnetBackend.Microsoft.AspNetCore.StaticWebAssets.props
@@ -166,6 +171,3 @@
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.pdb
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.genruntimeconfig.cache
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/ref/DotnetBackend.dll
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/AWSSDK.S3.dll
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.sourcelink.json
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/System.Net.WebSockets.WebSocketProtocol.dll

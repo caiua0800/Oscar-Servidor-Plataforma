@@ -67,6 +67,18 @@ namespace DotnetBackend.Models
         [BsonElement("description")]
         public string Description { get; set; } = "";
 
+        [BsonElement("ticketPayment")]
+        public string? TicketPayment { get; set; } = "";
+
+        [BsonElement("ticketId")]
+        public string? TicketId { get; set; } = "";
+
+        [BsonElement("qrCode")]
+        public string? QrCode { get; set; } = "";
+        
+        [BsonElement("qrCodeBase64")]
+        public string? QrCodeBase64 { get; set; } = "";
+
         public Purchase() { }
 
         public Purchase(string clientId, int quantity, decimal unityPrice, decimal discount, string coin, int type)
