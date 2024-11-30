@@ -34,6 +34,8 @@ builder.Services.AddCors(options =>
                .AllowAnyHeader()); // Permita todos os cabeçalhos
 });
 
+
+
 builder.Services.AddScoped<VendaService>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddScoped<PurchaseService>();
@@ -45,6 +47,8 @@ builder.Services.AddScoped<CounterService>();
 builder.Services.AddScoped<ExtractService>();
 builder.Services.AddScoped<ContractService>();
 builder.Services.AddScoped<WebSocketHandler>();
+builder.Services.AddHttpClient();
+
 
 builder.Services.AddControllers();
 
@@ -85,7 +89,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowSpecificOrigin");
+app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 

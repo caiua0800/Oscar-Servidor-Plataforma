@@ -5,17 +5,21 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Amazon.S3;
 using Amazon.S3.Transfer;
-
+using System.Net.Http;
+using Newtonsoft.Json;
+using System.Text;
 
 namespace DotnetBackend.Services
 {
     public class ClientService
     {
         private readonly IMongoCollection<Client> _clients;
+        private readonly HttpClient _httpClient;
 
-        public ClientService(MongoDbService mongoDbService)
+        public ClientService(MongoDbService mongoDbService, HttpClient httpClient)
         {
             _clients = mongoDbService.GetCollection<Client>("Clients");
+            _httpClient = httpClient;
         }
 
         public async Task<Client> CreateClientAsync(Client client, string password)
@@ -37,8 +41,39 @@ namespace DotnetBackend.Services
             client.DateCreated = DateTime.UtcNow;
             client.Status = 1;
             Console.WriteLine($"Data de Criação antes da inserção: {client.DateCreated}");
+
+            // Insere o cliente no MongoDB
             await _clients.InsertOneAsync(client);
+
+            // Envia o cliente para o Webhook
+            await SendClientToWebhookAsync(client);
+
             return client;
+        }
+        private async Task SendClientToWebhookAsync(Client client)
+        {
+            try
+            {
+                var webhookUrl = "https://adminoscar.modelodesoftwae.com/";
+                var jsonContent = JsonConvert.SerializeObject(client);
+
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+                var response = await _httpClient.PostAsync(webhookUrl, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Cliente enviado para o Webhook com sucesso!");
+                }
+                else
+                {
+                    Console.WriteLine($"Erro ao enviar o cliente para o Webhook: {response.StatusCode}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Erro ao enviar o cliente para o Webhook: {ex.Message}");
+            }
         }
 
         public async Task<List<Client>> GetAllClientsAsync()
@@ -60,7 +95,7 @@ namespace DotnetBackend.Services
 
         public async Task<string> UploadProfilePictureAsync(IFormFile file)
         {
-            var bucketName = "oscar-plataforma"; 
+            var bucketName = "oscar-plataforma";
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
             try
