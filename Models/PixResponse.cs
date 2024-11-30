@@ -5,7 +5,7 @@ namespace DotnetBackend.Models
     public class PixResponse
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; } = string.Empty;
+        public object Id { get; set; } = string.Empty; // Alterado para objeto
 
         [JsonPropertyName("point_of_interaction")]
         public PointOfInteraction PointOfInteraction { get; set; } = new PointOfInteraction();
