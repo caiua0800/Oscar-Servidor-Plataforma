@@ -47,7 +47,6 @@ builder.Services.AddScoped<CounterService>();
 builder.Services.AddScoped<ExtractService>();
 builder.Services.AddScoped<ContractService>();
 builder.Services.AddScoped<WebSocketHandler>();
-builder.Services.AddHttpClient();
 
 
 builder.Services.AddControllers();

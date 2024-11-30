@@ -6,8 +6,7 @@ using System.Collections.Generic;
 using Amazon.S3;
 using Amazon.S3.Transfer;
 using System.Net.Http;
-using Newtonsoft.Json;
-using System.Text;
+
 
 namespace DotnetBackend.Services
 {
@@ -41,39 +40,8 @@ namespace DotnetBackend.Services
             client.DateCreated = DateTime.UtcNow;
             client.Status = 1;
             Console.WriteLine($"Data de Criação antes da inserção: {client.DateCreated}");
-
-            // Insere o cliente no MongoDB
             await _clients.InsertOneAsync(client);
-
-            // Envia o cliente para o Webhook
-            await SendClientToWebhookAsync(client);
-
             return client;
-        }
-        private async Task SendClientToWebhookAsync(Client client)
-        {
-            try
-            {
-                var webhookUrl = "https://adminoscar.modelodesoftwae.com/";
-                var jsonContent = JsonConvert.SerializeObject(client);
-
-                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-                var response = await _httpClient.PostAsync(webhookUrl, content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("Cliente enviado para o Webhook com sucesso!");
-                }
-                else
-                {
-                    Console.WriteLine($"Erro ao enviar o cliente para o Webhook: {response.StatusCode}");
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erro ao enviar o cliente para o Webhook: {ex.Message}");
-            }
         }
 
         public async Task<List<Client>> GetAllClientsAsync()
