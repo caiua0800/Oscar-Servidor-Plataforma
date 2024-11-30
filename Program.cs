@@ -28,7 +28,7 @@ builder.Services.AddSingleton<MongoDbService>();
 // Configuração do CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowSpecificOrigin", builder =>
+    options.AddPolicy("AllowAllOrigins", builder =>
         builder.WithOrigins("https://adminoscar.modelodesoftwae.com") // Permita apenas o domínio específico
                .AllowAnyMethod()  // Permita todos os métodos (GET, POST, etc.)
                .AllowAnyHeader()); // Permita todos os cabeçalhos
@@ -85,7 +85,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowSpecificOrigin"); // Use a política específica de CORS
+app.UseCors("AllowAllOrigins"); // Use a política específica de CORS
 app.UseAuthentication();
 app.UseAuthorization();
 
