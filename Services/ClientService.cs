@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Amazon.S3;
 using Amazon.S3.Transfer;
-using System.Net.Http;
 
 
 namespace DotnetBackend.Services
@@ -13,12 +12,10 @@ namespace DotnetBackend.Services
     public class ClientService
     {
         private readonly IMongoCollection<Client> _clients;
-        private readonly HttpClient _httpClient;
 
-        public ClientService(MongoDbService mongoDbService, HttpClient httpClient)
+        public ClientService(MongoDbService mongoDbService)
         {
             _clients = mongoDbService.GetCollection<Client>("Clients");
-            _httpClient = httpClient;
         }
 
         public async Task<Client> CreateClientAsync(Client client, string password)
@@ -63,7 +60,7 @@ namespace DotnetBackend.Services
 
         public async Task<string> UploadProfilePictureAsync(IFormFile file)
         {
-            var bucketName = "oscar-plataforma";
+            var bucketName = "oscar-plataforma"; 
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
             try

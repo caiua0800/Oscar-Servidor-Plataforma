@@ -168,3 +168,4 @@
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/ref/DotnetBackend.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/AWSSDK.S3.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.sourcelink.json
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/System.Net.WebSockets.WebSocketProtocol.dll
