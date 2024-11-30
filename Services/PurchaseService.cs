@@ -280,7 +280,6 @@ namespace DotnetBackend.Services
 
         public async Task<bool> RemoveSomeAmountWithdrawn(string purchaseId, decimal amount)
         {
-            // Obtenha a compra existente
             Purchase existingPurchase = await GetPurchaseByIdAsync(purchaseId);
             if (existingPurchase == null)
             {
@@ -294,7 +293,6 @@ namespace DotnetBackend.Services
             }
 
             existingPurchase.AmountWithdrawn = existingPurchase.AmountWithdrawn - amount;
-
 
             var updateDefinition = Builders<Purchase>.Update
                 .Set(p => p.AmountWithdrawn, existingPurchase.AmountWithdrawn);

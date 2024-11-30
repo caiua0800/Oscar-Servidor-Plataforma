@@ -151,7 +151,7 @@ public class WithdrawalService
             if (newStatus == 3)
             {
                 Console.WriteLine("Cancelando");
-                await _purchaseService.RemoveSomeAmountWithdrawn(existingWithdrawal.ItemId, (decimal)(existingWithdrawal.AmountWithdrawn / 2)); //Coloquei dividido por 2 pq algum bug satânico tava de algum jeito dobrando esse valor não sei Jesus como
+                await _purchaseService.RemoveSomeAmountWithdrawn(existingWithdrawal.ItemId, (decimal)(existingWithdrawal.AmountWithdrawn)); //Coloquei dividido por 2 pq algum bug satânico tava de algum jeito dobrando esse valor não sei Jesus como
                 var extract = new Extract($"Devolução do Saque Negado referente a #{existingWithdrawal.ItemId}", (decimal)existingWithdrawal.AmountWithdrawn, existingWithdrawal.ClientId);
                 await _extractService.CreateExtractAsync(extract);
                 Console.WriteLine($"Valor de {existingWithdrawal.AmountWithdrawn} adicionado ao saldo do cliente {existingWithdrawal.ClientId}");
