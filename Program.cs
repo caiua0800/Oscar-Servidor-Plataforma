@@ -28,13 +28,11 @@ builder.Services.AddSingleton<MongoDbService>();
 // Configuração do CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAllOrigins", builder =>
-        builder.AllowAnyOrigin()  // Permita todos os domínios
+    options.AddPolicy("AllowSpecificOrigin", builder =>
+        builder.WithOrigins("https://adminoscar.modelodesoftwae.com") // Permita apenas o domínio específico
                .AllowAnyMethod()  // Permita todos os métodos (GET, POST, etc.)
                .AllowAnyHeader()); // Permita todos os cabeçalhos
 });
-
-
 
 builder.Services.AddScoped<VendaService>();
 builder.Services.AddScoped<ClientService>();
@@ -47,7 +45,6 @@ builder.Services.AddScoped<CounterService>();
 builder.Services.AddScoped<ExtractService>();
 builder.Services.AddScoped<ContractService>();
 builder.Services.AddScoped<WebSocketHandler>();
-
 
 builder.Services.AddControllers();
 
@@ -88,7 +85,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAllOrigins");
+app.UseCors("AllowSpecificOrigin"); // Use a política específica de CORS
 app.UseAuthentication();
 app.UseAuthorization();
 
@@ -99,7 +96,7 @@ app.Use(async (context, next) =>
     if (context.WebSockets.IsWebSocketRequest)
     {
         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-        var webSocketHandler = context.RequestServices.GetRequiredService<WebSocketHandler>(); // Correção aqui
+        var webSocketHandler = context.RequestServices.GetRequiredService<WebSocketHandler>();
         await webSocketHandler.HandleWebSocketAsync(webSocket);
     }
     else

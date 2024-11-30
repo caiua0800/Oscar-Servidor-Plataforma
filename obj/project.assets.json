@@ -63,18 +63,6 @@
           }
         }
       },
-      "MercadoPago/1.0.4477.31589": {
-        "type": "package",
-        "dependencies": {
-          "RestSharp": "102.7.0"
-        },
-        "compile": {
-          "lib/MercadoPago.dll": {}
-        },
-        "runtime": {
-          "lib/MercadoPago.dll": {}
-        }
-      },
       "Microsoft.AspNetCore.Authentication.Abstractions/2.2.0": {
         "type": "package",
         "dependencies": {
@@ -948,18 +936,6 @@
           "lib/net8.0/Quartz.Extensions.DependencyInjection.dll": {
             "related": ".xml"
           }
-        }
-      },
-      "RestSharp/102.7.0": {
-        "type": "package",
-        "dependencies": {
-          "Newtonsoft.Json": "(, )"
-        },
-        "compile": {
-          "lib/net35/RestSharp.dll": {}
-        },
-        "runtime": {
-          "lib/net35/RestSharp.dll": {}
         }
       },
       "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.2": {
@@ -2135,19 +2111,6 @@
         "lib/netstandard2.1/DnsClient.xml"
       ]
     },
-    "MercadoPago/1.0.4477.31589": {
-      "sha512": "GX1NSZaDdUcxmBkCEmaoCkJo/+FtZy0RmKbV2Yw9UBf9+2O2kULDhKWEdpWH23zsUoJunXb3taAlmqi5nMWEBw==",
-      "type": "package",
-      "path": "mercadopago/1.0.4477.31589",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "content/README-MercadoPago.html",
-        "lib/MercadoPago.dll",
-        "mercadopago.1.0.4477.31589.nupkg.sha512",
-        "mercadopago.nuspec"
-      ]
-    },
     "Microsoft.AspNetCore.Authentication.Abstractions/2.2.0": {
       "sha512": "VloMLDJMf3n/9ic5lCBOa42IBYJgyB1JhzLsL68Zqg+2bEPWfGBj/xCJy/LrKTArN0coOcZp3wyVTZlx0y9pHQ==",
       "type": "package",
@@ -3282,22 +3245,6 @@
         "quartz-logo-small.png",
         "quartz.extensions.dependencyinjection.3.13.1.nupkg.sha512",
         "quartz.extensions.dependencyinjection.nuspec"
-      ]
-    },
-    "RestSharp/102.7.0": {
-      "sha512": "G5PnwhT5d92i75cFP4ql+MZXs0AmRCnzV3BDNr01WT1SkY8QODttbJBz2tNJdLcKLuWfhf88/F6ThklStL9Yyw==",
-      "type": "package",
-      "path": "restsharp/102.7.0",
-      "files": [
-        ".nupkg.metadata",
-        ".signature.p7s",
-        "lib/net35-client/RestSharp.dll",
-        "lib/net35/RestSharp.dll",
-        "lib/sl3-wp/RestSharp.WindowsPhone.dll",
-        "lib/sl4-wp71/RestSharp.WindowsPhone.dll",
-        "lib/sl4/RestSharp.Silverlight.dll",
-        "restsharp.102.7.0.nupkg.sha512",
-        "restsharp.nuspec"
       ]
     },
     "runtime.debian.8-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.2": {
@@ -5861,7 +5808,6 @@
   "projectFileDependencyGroups": {
     "net8.0": [
       "AWSSDK.S3 >= 3.7.407.1",
-      "MercadoPago >= 1.0.4477.31589",
       "Microsoft.AspNetCore.Authentication.JwtBearer >= 8.0.8",
       "Microsoft.AspNetCore.Cors >= 2.2.0",
       "Microsoft.AspNetCore.OpenApi >= 8.0.8",
@@ -5919,10 +5865,6 @@
           "AWSSDK.S3": {
             "target": "Package",
             "version": "[3.7.407.1, )"
-          },
-          "MercadoPago": {
-            "target": "Package",
-            "version": "[1.0.4477.31589, )"
           },
           "Microsoft.AspNetCore.Authentication.JwtBearer": {
             "target": "Package",
@@ -5987,27 +5929,5 @@
         "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.402/PortableRuntimeIdentifierGraph.json"
       }
     }
-  },
-  "logs": [
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'MercadoPago 1.0.4477.31589' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0'. This package may not be fully compatible with your project.",
-      "libraryId": "MercadoPago",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    },
-    {
-      "code": "NU1701",
-      "level": "Warning",
-      "warningLevel": 1,
-      "message": "Package 'RestSharp 102.7.0' was restored using '.NETFramework,Version=v4.6.1, .NETFramework,Version=v4.6.2, .NETFramework,Version=v4.7, .NETFramework,Version=v4.7.1, .NETFramework,Version=v4.7.2, .NETFramework,Version=v4.8, .NETFramework,Version=v4.8.1' instead of the project target framework 'net8.0'. This package may not be fully compatible with your project.",
-      "libraryId": "RestSharp",
-      "targetGraphs": [
-        "net8.0"
-      ]
-    }
-  ]
+  }
 }

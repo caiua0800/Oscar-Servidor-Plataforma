@@ -128,7 +128,6 @@
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/AWSSDK.S3.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/AWSSDK.SecurityToken.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/DnsClient.dll
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/MercadoPago.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Microsoft.AspNetCore.OpenApi.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
@@ -145,7 +144,6 @@
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Newtonsoft.Json.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Quartz.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Quartz.Extensions.DependencyInjection.dll
-/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/RestSharp.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/SharpCompress.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Snappier.dll
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/Swashbuckle.AspNetCore.Swagger.dll
