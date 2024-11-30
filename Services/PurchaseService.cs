@@ -106,7 +106,7 @@ namespace DotnetBackend.Services
                     purchase.QrCode = pixResponse.PointOfInteraction.TransactionData.QrCode;
                     purchase.QrCodeBase64 = pixResponse.PointOfInteraction.TransactionData.QrCodeBase64;
                     purchase.TicketId = pixResponse.Id; 
-                    console.WriteLine(TicketPayment);
+                    Console.WriteLine(TicketPayment);
                 }
                 else
                 {
