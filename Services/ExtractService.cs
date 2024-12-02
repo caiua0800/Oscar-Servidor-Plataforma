@@ -58,8 +58,8 @@ namespace DotnetBackend.Services
             // Obtém os últimos 50 extratos, ordenados pelo ExtractId
             return await _extracts
                 .Find(_ => true) // Pega todos os extratos
-                .SortByDescending(e => e.ExtractId) 
-                .Limit(50) 
+                .SortByDescending(e => e.ExtractId)
+                .Limit(50)
                 .ToListAsync();
         }
 
@@ -79,6 +79,18 @@ namespace DotnetBackend.Services
         {
             var deleteResult = await _extracts.DeleteOneAsync(e => e.ExtractId == id);
             return deleteResult.IsAcknowledged && deleteResult.DeletedCount > 0; // Retorna true se a remoção foi bem-sucedida
+        }
+
+        public async Task<List<Extract>> GetExtractsContainingStringAsync(string searchString)
+        {
+            if (string.IsNullOrWhiteSpace(searchString))
+            {
+                throw new ArgumentException("A string de busca não pode ser vazia.", nameof(searchString));
+            }
+            string lowerSearchString = searchString.ToLower();
+
+            return await _extracts.Find(e => e.Name.ToLower().Contains(lowerSearchString))
+                .ToListAsync();
         }
     }
 }

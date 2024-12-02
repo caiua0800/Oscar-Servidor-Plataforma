@@ -44,6 +44,8 @@ builder.Services.AddScoped<SystemConfigService>();
 builder.Services.AddScoped<CounterService>();
 builder.Services.AddScoped<ExtractService>();
 builder.Services.AddScoped<ContractService>();
+builder.Services.AddScoped<GatewayService>();
+builder.Services.AddScoped<BankAccountService>();
 builder.Services.AddScoped<WebSocketHandler>();
 
 builder.Services.AddControllers();

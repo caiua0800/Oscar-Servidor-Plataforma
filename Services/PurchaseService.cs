@@ -17,13 +17,15 @@ namespace DotnetBackend.Services
         private readonly ExtractService _extractService;
         private readonly ClientService _clientService;
         private readonly ContractService _contractService;
-        public PurchaseService(MongoDbService mongoDbService, ClientService clientService, CounterService counterService, ExtractService extractService, ContractService contractService)
+        private readonly BankAccountService _bankAccountService;
+        public PurchaseService(MongoDbService mongoDbService, ClientService clientService, CounterService counterService, ExtractService extractService, ContractService contractService, BankAccountService bankAccountService)
         {
             _purchases = mongoDbService.GetCollection<Purchase>("Purchases");
             _counterService = counterService;
             _extractService = extractService;
             _clientService = clientService;
             _contractService = contractService;
+            _bankAccountService = bankAccountService;
         }
 
         public async Task<Purchase> CreatePurchaseAsync(Purchase purchase)
@@ -235,21 +237,21 @@ namespace DotnetBackend.Services
             return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
         }
 
-        public async Task<bool> UpdatePurchaseAsync(string purchaseId, decimal amountWithdrawn)
-        {
-            var existingPurchase = await GetPurchaseByIdAsync(purchaseId);
-            if (existingPurchase == null)
-            {
-                return false; // Compra não encontrada
-            }
+        // public async Task<bool> UpdatePurchaseAsync(string purchaseId, decimal amountWithdrawn)
+        // {
+        //     var existingPurchase = await GetPurchaseByIdAsync(purchaseId);
+        //     if (existingPurchase == null)
+        //     {
+        //         return false; // Compra não encontrada
+        //     }
 
-            existingPurchase.AmountWithdrawn += amountWithdrawn;
+        //     existingPurchase.AmountWithdrawn += amountWithdrawn;
 
-            var replaceResult = await _purchases.ReplaceOneAsync(
-                p => p.PurchaseId == purchaseId, existingPurchase);
+        //     var replaceResult = await _purchases.ReplaceOneAsync(
+        //         p => p.PurchaseId == purchaseId, existingPurchase);
 
-            return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
-        }
+        //     return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
+        // }
 
         public async Task<bool> AnticipateProfit(string purchaseId, decimal increasement)
         {
@@ -359,6 +361,7 @@ namespace DotnetBackend.Services
                 {
                     await _clientService.AddToBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
                     await _clientService.AddToBlockedBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
+                    await _bankAccountService.AddToBalanceAsync(purchaseId, existingPurchase.TotalPrice);
                     Console.WriteLine($"Saldo do cliente {existingPurchase.ClientId} atualizado com o valor {existingPurchase.TotalPrice}");
                 }
 

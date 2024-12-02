@@ -54,11 +54,6 @@ namespace DotnetBackend.Controllers
         public async Task<IActionResult> GetAll()
         {
             var clients = await _clientService.GetAllClientsAsync();
-            Console.WriteLine("Clientes no banco de dados: ");
-            foreach (var client in clients)
-            {
-                Console.WriteLine($"Id (CPF): {client.Id}, Name: {client.Name}");
-            }
             return Ok(clients);
         }
 
