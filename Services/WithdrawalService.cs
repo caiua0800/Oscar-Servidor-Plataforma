@@ -149,7 +149,7 @@ public class WithdrawalService
             existingWithdrawal.Status = newStatus;
             var updateDefinition = Builders<Withdrawal>.Update.Set(w => w.Status, newStatus);
             await _withdrawals.UpdateOneAsync(w => w.WithdrawalId == withdrawalId, updateDefinition);
-            await _bankAccountService.WithdrawFromBalanceAsync(withdrawalId, (decimal)existingWithdrawal.AmountWithdrawn*(decimal)0.96);
+            await _bankAccountService.WithdrawFromBalanceAsync(withdrawalId, (decimal)existingWithdrawal.AmountWithdrawn);
             Console.WriteLine($"Saque encontrado: {existingWithdrawal.WithdrawalId}, novo status {newStatus}");
 
             if (newStatus == 3)

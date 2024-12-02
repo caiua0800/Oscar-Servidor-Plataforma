@@ -10,11 +10,13 @@ public class GatewayService
     private readonly WithdrawalService _withdrawalService;
     private readonly ClientService _clientService;
     private readonly PurchaseService _purchaseService;
-    public GatewayService(ClientService clientService, PurchaseService purchaseService, WithdrawalService withdrawalService)
+    private readonly BankAccountService _bankAccountService;
+    public GatewayService(ClientService clientService, PurchaseService purchaseService, WithdrawalService withdrawalService, BankAccountService bankAccountService)
     {
         _clientService = clientService;
         _purchaseService = purchaseService;
         _withdrawalService = withdrawalService;
+        _bankAccountService = bankAccountService;
     }
 
     public async Task<PlatformInfo> GetPlatformInfos()
@@ -52,6 +54,8 @@ public class GatewayService
             .Where(w => w.Status == 1)
             .Sum(w => w.AmountWithdrawn);
 
+        BankAccount bankAccount = await _bankAccountService.GetBankAccountAsync();
+
         var platformInfo = new PlatformInfo
         {
             TotalClients = all_clients.Count,
@@ -60,7 +64,8 @@ public class GatewayService
             PurchasesThisMonth = purchasesThisMonth,
             TotalAmountToWithdraw = totalAmountToWithdraw,
             TotalAmountActivePurchases = totalAmountActivePurchases,
-            TotalAmountPurchasesThisMonth = totalAmountPurchasesThisMonth
+            TotalAmountPurchasesThisMonth = totalAmountPurchasesThisMonth,
+            BankAccountValue = bankAccount.Balance
         };
 
         return platformInfo;

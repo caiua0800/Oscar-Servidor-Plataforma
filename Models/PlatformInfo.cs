@@ -1,3 +1,5 @@
+using DotnetBackend.Models;
+
 public class PlatformInfo
 {
     public int TotalClients { get; set; }
@@ -7,6 +9,7 @@ public class PlatformInfo
     public int TotalPurchasesActive { get; set; }
     public double TotalAmountToWithdraw { get; set; }
     public decimal TotalAmountActivePurchases { get; set; }
-    public decimal TotalAmountPurchasesThisMonth { get; set; } // Nova propriedade
+    public decimal TotalAmountPurchasesThisMonth { get; set; }
+    public decimal? BankAccountValue { get; set; }
 
 }
