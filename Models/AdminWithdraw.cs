@@ -12,8 +12,9 @@ namespace DotnetBackend.Models
 
         [BsonElement("amountWithdrawn")]
         public required double AmountWithdrawn { get; set; }
+
         [BsonElement("amountWithdrawnToPay")]
-        public required double AmountWithdrawnToPay { get; set; }
+        public double? AmountWithdrawnToPay { get; set; }
 
         [BsonElement("datacreated")]
         public DateTime? DateCreated { get; set; }
