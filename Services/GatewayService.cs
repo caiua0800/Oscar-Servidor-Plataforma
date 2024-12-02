@@ -11,12 +11,14 @@ public class GatewayService
     private readonly ClientService _clientService;
     private readonly PurchaseService _purchaseService;
     private readonly BankAccountService _bankAccountService;
-    public GatewayService(ClientService clientService, PurchaseService purchaseService, WithdrawalService withdrawalService, BankAccountService bankAccountService)
+    private readonly AdminWithdrawalService _adminWithdrawalService;
+    public GatewayService(ClientService clientService, PurchaseService purchaseService, WithdrawalService withdrawalService, BankAccountService bankAccountService, AdminWithdrawalService adminWithdrawalService)
     {
         _clientService = clientService;
         _purchaseService = purchaseService;
         _withdrawalService = withdrawalService;
         _bankAccountService = bankAccountService;
+        _adminWithdrawalService = adminWithdrawalService;
     }
 
     public async Task<PlatformInfo> GetPlatformInfos()
@@ -24,6 +26,7 @@ public class GatewayService
         List<Client> all_clients = await _clientService.GetAllClientsAsync();
         List<Withdrawal> all_withdrawals = await _withdrawalService.GetAllWithdrawalsAsync();
         List<Purchase> all_purchases = await _purchaseService.GetAllPurchasesAsync();
+        List<AdminWithdrawal> all_admin_withdrawals = await _adminWithdrawalService.GetAllAdminWithdrawsToPay();
 
         var currentMonth = DateTime.Now.Month;
         var currentYear = DateTime.Now.Year;
@@ -54,6 +57,10 @@ public class GatewayService
             .Where(w => w.Status == 1)
             .Sum(w => w.AmountWithdrawn);
 
+        double? totalAdminAmountToWithdrawal = all_admin_withdrawals
+            .Where(w => w.Status == 1)
+            .Sum(w => w.AmountWithdrawnToPay);
+
         BankAccount bankAccount = await _bankAccountService.GetBankAccountAsync();
 
         var platformInfo = new PlatformInfo
@@ -65,7 +72,8 @@ public class GatewayService
             TotalAmountToWithdraw = totalAmountToWithdraw,
             TotalAmountActivePurchases = totalAmountActivePurchases,
             TotalAmountPurchasesThisMonth = totalAmountPurchasesThisMonth,
-            BankAccountValue = bankAccount.Balance
+            BankAccountValue = bankAccount.Balance,
+            TotalAdminAmountToWithdraw = (double)totalAdminAmountToWithdrawal
         };
 
         return platformInfo;
@@ -76,6 +84,18 @@ public class GatewayService
         try
         {
             return await _withdrawalService.GetAllWithdrawsToPay();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Erro ao obter saques.", ex);
+        }
+    }
+
+    public async Task<List<AdminWithdrawal>> GetAllAdminWithdrawals()
+    {
+        try
+        {
+            return await _adminWithdrawalService.GetAllAdminWithdrawsToPay();
         }
         catch (Exception ex)
         {

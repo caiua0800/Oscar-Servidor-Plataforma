@@ -31,6 +31,12 @@ namespace DotnetBackend.Controllers
             return Ok(withdrawals);
         }
 
+        [HttpGet("adminwithdraw")]
+        public async Task<IActionResult> GetAllAdminWithdrawals()
+        {
+            var withdrawals = await _gatewayService.GetAllAdminWithdrawals();
+            return Ok(withdrawals);
+        }
 
     }
 }
