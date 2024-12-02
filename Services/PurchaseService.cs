@@ -361,7 +361,7 @@ namespace DotnetBackend.Services
                 {
                     await _clientService.AddToBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
                     await _clientService.AddToBlockedBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
-                    await _bankAccountService.AddToBalanceAsync(purchaseId, existingPurchase.TotalPrice);
+                    await _bankAccountService.AddToBalanceAsync(purchaseId, existingPurchase.AmountPaid);
                     Console.WriteLine($"Saldo do cliente {existingPurchase.ClientId} atualizado com o valor {existingPurchase.TotalPrice}");
                 }
 

@@ -58,7 +58,7 @@ namespace DotnetBackend.Services
             return account;
         }
 
-        public async Task<BankAccount> WithdrawFromBalanceAsync(decimal amount)
+        public async Task<BankAccount> WithdrawFromBalanceAsync(string? withdrawId, decimal amount)
         {
             var account = await GetBankAccountAsync();
             if (account == null)
@@ -68,12 +68,21 @@ namespace DotnetBackend.Services
             account.WithdrawFromBalance(amount);
             await _bankAccountCollection.ReplaceOneAsync(a => a.Id == account.Id, account);
 
-            var extract = new Extract($"Pagamento de solicitação de saque de {amount}", amount, account.AccountHolderName);
-            await _extractService.CreateExtractAsync(extract);
+            // Cria extrato para a operação de saque
+            if (withdrawId != null)
+            {
+                var extract = new Extract($"Pagamento de solicitação de saque de {amount} da conta bancária ref saque #{withdrawId}", amount, account.AccountHolderName);
+                await _extractService.CreateExtractAsync(extract);
+            }
+            else
+            {
+                var extract = new Extract($"Pagamento de solicitação de saque da conta bancária de {amount}", amount, account.AccountHolderName);
+                await _extractService.CreateExtractAsync(extract);
+            }
 
             return account;
         }
 
-        
+
     }
 }

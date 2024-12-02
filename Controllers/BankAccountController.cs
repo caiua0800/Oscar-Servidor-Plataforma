@@ -53,16 +53,16 @@ namespace DotnetBackend.Controllers
         }
 
         [HttpPost("withdraw")]
-        public async Task<IActionResult> WithdrawFromBalance([FromBody] decimal amount)
+        public async Task<IActionResult> WithdrawFromBalance([FromBody] WithdrawRequest request)
         {
-            if (amount <= 0)
+            if (request.Amount <= 0)
             {
                 return BadRequest("O valor do saque deve ser positivo.");
             }
 
             try
             {
-                var updatedBankAccount = await _bankAccountService.WithdrawFromBalanceAsync(amount);
+                var updatedBankAccount = await _bankAccountService.WithdrawFromBalanceAsync(request.WithdrawId, request.Amount);
                 return Ok(updatedBankAccount);
             }
             catch (InvalidOperationException ex)
@@ -120,5 +120,11 @@ namespace DotnetBackend.Controllers
                 return StatusCode(500, "Erro ao buscar extratos: " + ex.Message);
             }
         }
+    }
+
+    public class WithdrawRequest
+    {
+        public string? WithdrawId { get; set; }
+        public decimal Amount { get; set; }
     }
 }

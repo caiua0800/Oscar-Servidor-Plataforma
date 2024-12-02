@@ -12,13 +12,16 @@ public class WithdrawalService
     private readonly ExtractService _extractService;
     private readonly ClientService _clientService;
     private readonly PurchaseService _purchaseService;
-    public WithdrawalService(MongoDbService mongoDbService, ClientService clientService, CounterService counterService, ExtractService extractService, PurchaseService purchaseService)
+    private readonly BankAccountService _bankAccountService;
+    public WithdrawalService(MongoDbService mongoDbService, ClientService clientService, 
+    CounterService counterService, ExtractService extractService, PurchaseService purchaseService, BankAccountService bankAccountService)
     {
         _withdrawals = mongoDbService.GetCollection<Withdrawal>("Withdrawal");
         _counterService = counterService;
         _extractService = extractService;
         _clientService = clientService;
         _purchaseService = purchaseService;
+        _bankAccountService = bankAccountService;
     }
 
     public async Task<Withdrawal> CreateWithdrawalAsync(Withdrawal withdrawal)
@@ -146,6 +149,7 @@ public class WithdrawalService
             existingWithdrawal.Status = newStatus;
             var updateDefinition = Builders<Withdrawal>.Update.Set(w => w.Status, newStatus);
             await _withdrawals.UpdateOneAsync(w => w.WithdrawalId == withdrawalId, updateDefinition);
+            await _bankAccountService.WithdrawFromBalanceAsync(withdrawalId, (decimal)existingWithdrawal.AmountWithdrawn*(decimal)0.96);
             Console.WriteLine($"Saque encontrado: {existingWithdrawal.WithdrawalId}, novo status {newStatus}");
 
             if (newStatus == 3)
