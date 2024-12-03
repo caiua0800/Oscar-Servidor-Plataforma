@@ -107,7 +107,8 @@ namespace DotnetBackend.Services
                     purchase.TicketPayment = pixResponse?.PointOfInteraction.TransactionData.TicketUrl;
                     purchase.QrCode = pixResponse?.PointOfInteraction.TransactionData.QrCode;
                     purchase.QrCodeBase64 = pixResponse?.PointOfInteraction.TransactionData.QrCodeBase64;
-                    purchase.TicketId = pixResponse?.Id?.ToString(); // Converter ID para string ao atribuir
+                    purchase.TicketId = pixResponse?.Id?.ToString(); 
+                    purchase.ExpirationDate = pixResponse?.PointOfInteraction.TransactionData.ExpirationDate;
                     Console.WriteLine($"Ticket gerado com sucesso, id: {pixResponse?.Id}");
                 }
                 else

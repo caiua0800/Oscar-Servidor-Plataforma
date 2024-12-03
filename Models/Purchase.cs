@@ -70,12 +70,15 @@ namespace DotnetBackend.Models
         [BsonElement("ticketPayment")]
         public string? TicketPayment { get; set; } = "";
 
+        [BsonElement("expirationDate")]
+        public string? ExpirationDate { get; set; } = "";
+
         [BsonElement("ticketId")]
         public string? TicketId { get; set; } = "";
 
         [BsonElement("qrCode")]
         public string? QrCode { get; set; } = "";
-        
+
         [BsonElement("qrCodeBase64")]
         public string? QrCodeBase64 { get; set; } = "";
 

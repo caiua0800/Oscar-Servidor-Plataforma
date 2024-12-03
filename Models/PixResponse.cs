@@ -21,6 +21,9 @@ namespace DotnetBackend.Models
     {
         [JsonPropertyName("ticket_url")]
         public string TicketUrl { get; set; } = string.Empty;
+        
+        [JsonPropertyName("date_of_expiration")]
+        public string ExpirationDate { get; set; } = string.Empty;
 
         [JsonPropertyName("qr_code")]
         public string QrCode { get; set; } = string.Empty;
