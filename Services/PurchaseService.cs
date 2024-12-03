@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
 using System.Net.Http.Headers;
+using System.Text.Json.Serialization;
 
 
 namespace DotnetBackend.Services
@@ -226,18 +227,20 @@ namespace DotnetBackend.Services
 
                     // Lê o conteúdo da resposta
                     var responseBody = await response.Content.ReadAsStringAsync();
+
                     Console.WriteLine("Resultado da Verificação do Pagamento:");
                     Console.WriteLine(responseBody);
 
-                    // Deserializa a resposta para um objeto PaymentResponse
-                    var paymentResult = JsonSerializer.Deserialize<PaymentResponse>(responseBody);
+                    // Deserializa a resposta para um objeto StatusResponse
+                    var statusResult = JsonSerializer.Deserialize<StatusResponse>(responseBody);
 
-                    // Confirme se o paymentResult não é nulo
-                    if (paymentResult != null && (paymentResult.Status == "authorized" || paymentResult.Status == "approved"))
+                    if (statusResult != null && (statusResult.Status == "approved" || statusResult.Status == "authorized"))
                     {
                         await UpdateStatus(idPurchase, 2); // Atualiza o status para 2 se o pagamento for aprovado
                         return true;
                     }
+
+                    Console.WriteLine(statusResult.Status);
 
                     return false; // Retorna false para qualquer outro status
                 }
@@ -286,23 +289,6 @@ namespace DotnetBackend.Services
 
             return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
         }
-
-        // public async Task<bool> UpdatePurchaseAsync(string purchaseId, decimal amountWithdrawn)
-        // {
-        //     var existingPurchase = await GetPurchaseByIdAsync(purchaseId);
-        //     if (existingPurchase == null)
-        //     {
-        //         return false; // Compra não encontrada
-        //     }
-
-        //     existingPurchase.AmountWithdrawn += amountWithdrawn;
-
-        //     var replaceResult = await _purchases.ReplaceOneAsync(
-        //         p => p.PurchaseId == purchaseId, existingPurchase);
-
-        //     return replaceResult.IsAcknowledged && replaceResult.ModifiedCount > 0;
-        // }
-
         public async Task<bool> AnticipateProfit(string purchaseId, decimal increasement)
         {
             Purchase? existingPurchase = await GetPurchaseByIdAsync(purchaseId);
@@ -459,10 +445,9 @@ namespace DotnetBackend.Services
 
     }
 
-    public class PaymentResponse
+    public class StatusResponse
     {
-        public string Id { get; set; }
+        [JsonPropertyName("status")]
         public string Status { get; set; }
-        // Adicione mais propriedades conforme necessário
     }
 }
