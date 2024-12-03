@@ -24,19 +24,32 @@ namespace DotnetBackend.Controllers
             return Ok(platformInfo);
         }
 
-        [HttpGet("withdraw")]
-        public async Task<IActionResult> GetAllWithdrawals()
+        [HttpGet("withdraw/pending")]
+        public async Task<IActionResult> GetAllWithdrawalsToPay()
+        {
+            var withdrawals = await _gatewayService.GetAllWithdrawalsToPay();
+            return Ok(withdrawals);
+        }
+
+        [HttpGet("adminwithdraw/pending")]
+        public async Task<IActionResult> GetAllAdminWithdrawalsToPay()
+        {
+            var withdrawals = await _gatewayService.GetAllAdminWithdrawalsToPay();
+            return Ok(withdrawals);
+        }
+
+        [HttpGet("withdraw/paid")]
+        public async Task<IActionResult> GetAllWithdrawalsPaid()
         {
             var withdrawals = await _gatewayService.GetAllWithdrawals();
             return Ok(withdrawals);
         }
 
-        [HttpGet("adminwithdraw")]
+        [HttpGet("adminwithdraw/paid")]
         public async Task<IActionResult> GetAllAdminWithdrawals()
         {
             var withdrawals = await _gatewayService.GetAllAdminWithdrawals();
             return Ok(withdrawals);
         }
-
     }
 }

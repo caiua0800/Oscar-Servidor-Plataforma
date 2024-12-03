@@ -79,7 +79,7 @@ public class GatewayService
         return platformInfo;
     }
 
-    public async Task<List<Withdrawal>> GetAllWithdrawals()
+    public async Task<List<Withdrawal>> GetAllWithdrawalsToPay()
     {
         try
         {
@@ -91,11 +91,35 @@ public class GatewayService
         }
     }
 
-    public async Task<List<AdminWithdrawal>> GetAllAdminWithdrawals()
+    public async Task<List<AdminWithdrawal>> GetAllAdminWithdrawalsToPay()
     {
         try
         {
             return await _adminWithdrawalService.GetAllAdminWithdrawsToPay();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Erro ao obter saques.", ex);
+        }
+    }
+
+    public async Task<List<Withdrawal>> GetAllWithdrawals()
+    {
+        try
+        {
+            return await _withdrawalService.GetAllWithdrawalsAsync();
+        }
+        catch (Exception ex)
+        {
+            throw new Exception("Erro ao obter saques.", ex);
+        }
+    }
+
+    public async Task<List<AdminWithdrawal>> GetAllAdminWithdrawals()
+    {
+        try
+        {
+            return await _adminWithdrawalService.GetAllAdminWithdrawalsAsync();
         }
         catch (Exception ex)
         {
