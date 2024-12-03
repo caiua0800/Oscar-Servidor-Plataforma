@@ -64,11 +64,19 @@ namespace DotnetBackend.Controllers
             bool isPaymentVerified = await _purchaseService.VerifyPayment(id, ticketId);
             if (isPaymentVerified)
             {
-                return Ok(new { message = "Pagamento verificado com sucesso." });
+                return Ok(new
+                {
+                    message = "Pagamento verificado com sucesso.",
+                    paid = true
+                });
             }
             else
             {
-                return NotFound(new { message = "Pagamento não encontrado ou não verificado." });
+                return NotFound(new
+                {
+                    message = "Pagamento não encontrado ou não verificado.",
+                    paid = false
+                });
             }
         }
 
