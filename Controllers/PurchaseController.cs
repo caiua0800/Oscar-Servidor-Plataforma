@@ -58,6 +58,19 @@ namespace DotnetBackend.Controllers
             return Ok(purchases);
         }
 
+        [HttpGet("verify/{id}")]
+        public async Task<IActionResult> VerifyPayment(string id)
+        {
+            bool isPaymentVerified = await _purchaseService.VerifyPayment(id);
+            if (isPaymentVerified)
+            {
+                return Ok(new { message = "Pagamento verificado com sucesso." });
+            }
+            else
+            {
+                return NotFound(new { message = "Pagamento não encontrado ou não verificado." });
+            }
+        }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)

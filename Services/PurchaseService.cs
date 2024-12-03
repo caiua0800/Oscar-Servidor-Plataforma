@@ -6,6 +6,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Text;
+using System.Net.Http.Headers;
 
 
 namespace DotnetBackend.Services
@@ -107,7 +108,7 @@ namespace DotnetBackend.Services
                     purchase.TicketPayment = pixResponse?.PointOfInteraction.TransactionData.TicketUrl;
                     purchase.QrCode = pixResponse?.PointOfInteraction.TransactionData.QrCode;
                     purchase.QrCodeBase64 = pixResponse?.PointOfInteraction.TransactionData.QrCodeBase64;
-                    purchase.TicketId = pixResponse?.Id?.ToString(); 
+                    purchase.TicketId = pixResponse?.Id?.ToString();
                     purchase.ExpirationDate = pixResponse?.PointOfInteraction.TransactionData.ExpirationDate;
                     Console.WriteLine($"Ticket gerado com sucesso, id: {pixResponse?.Id}");
                 }
@@ -205,6 +206,54 @@ namespace DotnetBackend.Services
             }
 
             return await _purchases.Find(p => p.ClientId == clientId).ToListAsync();
+        }
+
+        public async Task<bool> VerifyPayment(string idPurchase)
+        {
+            var mpUrl = $"https://api.mercadopago.com/v1/payments/{idPurchase}";
+            var accessToken = "APP_USR-1375204330701481-073021-97be99fab97882aa55c07ffe1e81ec7e-246170016"; // Idealmente, mova isso para appsettings.json.
+
+            using (var httpClient = new HttpClient())
+            {
+                try
+                {
+                    // Configura o cabeçalho com o Token de Acesso
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+                    // Faz a requisição GET para verificar o pagamento
+                    var response = await httpClient.GetAsync(mpUrl);
+                    response.EnsureSuccessStatusCode(); // Lança uma exceção se a resposta não for bem-sucedida
+
+                    // Lê o conteúdo da resposta
+                    var responseBody = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine("Resultado da Verificação do Pagamento:");
+                    Console.WriteLine(responseBody);
+
+                    // Deserializa a resposta para um objeto PaymentResponse
+                    var paymentResult = JsonSerializer.Deserialize<PaymentResponse>(responseBody);
+
+                    // Confirme se o paymentResult não é nulo
+                    if (paymentResult != null && (paymentResult.Status == "authorized" || paymentResult.Status == "approved"))
+                    {
+                        await UpdateStatus(idPurchase, 2); // Atualiza o status para 2 se o pagamento for aprovado
+                        return true;
+                    }
+
+                    return false; // Retorna false para qualquer outro status
+                }
+                catch (HttpRequestException e)
+                {
+                    Console.WriteLine("ERRO NA VERIFICAÇÃO DO PAGAMENTO:");
+                    Console.WriteLine(e.Message);
+                    return false; // Retorna false em caso de erro
+                }
+                catch (JsonException jsonEx)
+                {
+                    Console.WriteLine("Erro ao deserializar a resposta do pagamento:");
+                    Console.WriteLine(jsonEx.Message);
+                    return false; // Retorna false se ocorrer um erro de deserialização
+                }
+            }
         }
 
         public async Task<bool> WithdrawFromPurchaseAsync(string purchaseId, decimal amount)
@@ -408,5 +457,12 @@ namespace DotnetBackend.Services
             throw new NotImplementedException();
         }
 
+    }
+
+    public class PaymentResponse
+    {
+        public string Id { get; set; }
+        public string Status { get; set; }
+        // Adicione mais propriedades conforme necessário
     }
 }
