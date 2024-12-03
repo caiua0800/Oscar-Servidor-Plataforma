@@ -208,9 +208,9 @@ namespace DotnetBackend.Services
             return await _purchases.Find(p => p.ClientId == clientId).ToListAsync();
         }
 
-        public async Task<bool> VerifyPayment(string idPurchase)
+        public async Task<bool> VerifyPayment(string idPurchase, string ticketId)
         {
-            var mpUrl = $"https://api.mercadopago.com/v1/payments/{idPurchase}";
+            var mpUrl = $"https://api.mercadopago.com/v1/payments/{ticketId}";
             var accessToken = "APP_USR-1375204330701481-073021-97be99fab97882aa55c07ffe1e81ec7e-246170016"; // Idealmente, mova isso para appsettings.json.
 
             using (var httpClient = new HttpClient())
