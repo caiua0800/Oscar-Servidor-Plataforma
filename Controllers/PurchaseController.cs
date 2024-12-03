@@ -59,7 +59,7 @@ namespace DotnetBackend.Controllers
         }
 
         [HttpGet("verify/{id}/{ticketId}")]
-        public async Task<IActionResult> VerifyPayment(string id)
+        public async Task<IActionResult> VerifyPayment(string id, string ticketId)
         {
             bool isPaymentVerified = await _purchaseService.VerifyPayment(id, ticketId);
             if (isPaymentVerified)
