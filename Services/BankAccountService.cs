@@ -46,12 +46,12 @@ namespace DotnetBackend.Services
 
             if (purchaseId != null)
             {
-                var extract = new Extract($"Depósito de {amount} na conta bancária ref compra #{purchaseId}", amount, account.AccountHolderName);
+                var extract = new Extract($"Depósito de R${amount} na conta bancária ref compra #{purchaseId}", amount, account.AccountHolderName);
                 await _extractService.CreateExtractAsync(extract);
             }
             else
             {
-                var extract = new Extract($"Depósito de {amount} na conta bancária", amount, account.AccountHolderName);
+                var extract = new Extract($"Depósito de R${amount} na conta bancária", amount, account.AccountHolderName);
                 await _extractService.CreateExtractAsync(extract);
             }
 
