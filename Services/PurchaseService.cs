@@ -43,6 +43,8 @@ namespace DotnetBackend.Services
             string title;
             double gain;
 
+            Console.WriteLine(purchase.ProductName);
+
             if (purchase.Type == 0)
             {
                 value = purchase.UnityPrice;
@@ -80,7 +82,7 @@ namespace DotnetBackend.Services
             TimeZoneInfo brtZone = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
             DateTime currentBrasiliaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, brtZone);
             purchase.PurchaseDate = currentBrasiliaTime;
-            purchase.ProductName = title;
+            purchase.ProductName = purchase.ProductName;
             purchase.Status = 1;
 
             // Chamada à API PIX
@@ -120,7 +122,8 @@ namespace DotnetBackend.Services
             }
 
             await _purchases.InsertOneAsync(purchase);
-            var extract = new Extract("Compra", purchase.TotalPrice, purchase.ClientId);
+            var extract = new Extract($"Compra {purchase.ProductName}", purchase.TotalPrice, purchase.ClientId);
+            Console.WriteLine($"Compra {purchase.ProductName}");
             await _extractService.CreateExtractAsync(extract);
             await _clientService.AddPurchaseAsync(purchase.ClientId, purchase.PurchaseId);
 
@@ -314,12 +317,17 @@ namespace DotnetBackend.Services
 
         public async Task<bool> AddIncrementToPurchaseAsync(string purchaseId, decimal amount)
         {
+            Console.WriteLine($"Iniciando o incremento no contrato: {purchaseId} com valor de R${amount}");
+
             // Obtenha a compra existente
             Purchase existingPurchase = await GetPurchaseByIdAsync(purchaseId);
             if (existingPurchase == null)
             {
+                Console.WriteLine($"Compra com o ID {purchaseId} não encontrada.");
                 return false;
             }
+
+            Console.WriteLine($"Compra encontrada: {existingPurchase}");
 
             Client existingClient = await _clientService.GetClientByIdAsync(existingPurchase.ClientId);
             if (existingClient == null)
@@ -327,28 +335,86 @@ namespace DotnetBackend.Services
                 throw new InvalidOperationException("Cliente não encontrado.");
             }
 
-            if (amount > (existingClient.Balance - (existingClient.BlockedBalance ?? 0)))
+            Console.WriteLine($"Cliente encontrado: {existingClient.Id} com saldo de R${existingClient.Balance} e saldo bloqueado de R${existingClient.BlockedBalance}");
+
+            decimal availableBalance = (decimal)existingClient.Balance - (existingClient.BlockedBalance ?? 0);
+            if (amount > availableBalance)
             {
-                throw new InvalidOperationException("Saldo insuficiente para realizar o incremento.");
+                Console.WriteLine($"Saldo insuficiente para realizar o incremento. Saldo disponível: R${availableBalance}, Valor solicitado: R${amount}");
+
+                // Tentar obter o saldo faltante de outras compras com status 2
+                decimal remainingAmount = amount - availableBalance;
+                var purchasesWithStatus2 = await _purchases.Find(p => p.Status == 2 && p.ClientId == existingClient.Id).ToListAsync();
+
+                foreach (var purchase in purchasesWithStatus2)
+                {
+                    decimal withdrawableAmount = purchase.CurrentIncome - purchase.AmountWithdrawn;
+
+                    if (withdrawableAmount > 0)
+                    {
+                        if (withdrawableAmount >= remainingAmount)
+                        {
+                            // Pode retirar o restante necessário
+                            await WithdrawFromPurchaseAsync(purchase.PurchaseId, remainingAmount);
+                            Console.WriteLine($"Retirado R${remainingAmount} da compra {purchase.PurchaseId}.");
+                            remainingAmount = 0; // Fim da necessidade de retirada
+                            break;
+                        }
+                        else
+                        {
+                            // Retirar o máximo possível
+                            await WithdrawFromPurchaseAsync(purchase.PurchaseId, withdrawableAmount);
+                            Console.WriteLine($"Retirado R${withdrawableAmount} da compra {purchase.PurchaseId}.");
+                            remainingAmount -= withdrawableAmount; // Reduz a quantidade que ainda precisa ser retirada
+                        }
+                    }
+                }
+
+                if (remainingAmount > 0)
+                {
+                    Console.WriteLine($"Após verificar outras compras, ainda faltam R${remainingAmount} para completar o incremento.");
+                    throw new InvalidOperationException("Saldo insuficiente mesmo após retirar de outras compras.");
+                }
             }
 
+            // Adicionando a compra normalmente agora que temos saldo suficiente
             existingPurchase.TotalPrice += amount;
             existingPurchase.AmountPaid += amount;
-            Console.WriteLine($"O valor do Final Income era {existingPurchase.FinalIncome} e agora somando {(amount * (decimal)(existingPurchase.PercentageProfit))} ficou {existingPurchase.FinalIncome + (amount * (decimal)(existingPurchase.PercentageProfit / 100))}");
-            existingPurchase.FinalIncome += (amount * ((decimal)(existingPurchase.PercentageProfit)));
+            existingPurchase.FinalIncome += amount * (decimal)existingPurchase.PercentageProfit;
+            Console.WriteLine($"O valor do Final Income era {existingPurchase.FinalIncome - (amount * (decimal)existingPurchase.PercentageProfit)} e agora ficou {existingPurchase.FinalIncome}");
 
+            // Atualizar a compra
             var updateDefinition = Builders<Purchase>.Update
                 .Set(p => p.TotalPrice, existingPurchase.TotalPrice)
                 .Set(p => p.AmountPaid, existingPurchase.AmountPaid)
                 .Set(p => p.FinalIncome, existingPurchase.FinalIncome);
 
             await _purchases.UpdateOneAsync(p => p.PurchaseId == purchaseId, updateDefinition);
+            Console.WriteLine($"Compra com ID {purchaseId} atualizada com sucesso.");
 
             var extract = new Extract($"Incremento no contrato {purchaseId} de R${amount}", amount, existingClient.Id);
             await _extractService.CreateExtractAsync(extract);
-            await _clientService.WithdrawFromBalanceAsync(existingClient.Id, (amount / 2));
-            await _clientService.AddToBlockedBalanceAsync(existingClient.Id, (amount / 2));
-            await WithdrawFromPurchaseAsync(purchaseId, amount);
+            Console.WriteLine($"Extrato criado para o cliente {existingClient.Id}.");
+
+            // Retirando do saldo do cliente
+            await _clientService.WithdrawFromBalanceAsync(existingClient.Id, amount / 2);
+            Console.WriteLine($"Valor de R${amount / 2} retirado do saldo do cliente {existingClient.Id}.");
+
+            // Adicionando metade do valor ao saldo bloqueado
+            await _clientService.AddToBlockedBalanceAsync(existingClient.Id, amount / 2);
+            Console.WriteLine($"Valor de R${amount / 2} adicionado ao saldo bloqueado do cliente {existingClient.Id}.");
+
+            // Realiza a retirada da compra existente se houver saldo suficiente
+            if (existingPurchase.CurrentIncome - existingPurchase.AmountWithdrawn >= amount)
+            {
+                await WithdrawFromPurchaseAsync(existingPurchase.PurchaseId, amount);
+                Console.WriteLine($"Saque de R${amount} realizado na compra {existingPurchase.PurchaseId}.");
+            }
+            else
+            {
+                // Aqui, a lógica já foi feita anteriormente para buscar outras compras com status 2
+            }
+
             return true;
         }
 
