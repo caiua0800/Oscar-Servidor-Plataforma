@@ -26,10 +26,86 @@ public class GatewayService
         List<Client> all_clients = await _clientService.GetAllClientsAsync();
         List<Withdrawal> all_withdrawals = await _withdrawalService.GetAllWithdrawalsAsync();
         List<Purchase> all_purchases = await _purchaseService.GetAllPurchasesAsync();
-        List<AdminWithdrawal> all_admin_withdrawals = await _adminWithdrawalService.GetAllAdminWithdrawsToPay();
+        List<AdminWithdrawal> all_admin_withdrawals = await _adminWithdrawalService.GetAllAdminWithdrawalsAsync();
 
         var currentMonth = DateTime.Now.Month;
         var currentYear = DateTime.Now.Year;
+
+        MonthModel[] totalWithdrawalsLastFourMonths = new MonthModel[5]; // Tamanho aumentado para 5
+
+        // Preenche a entrada do mês atual
+        {
+            double totalNormalWithdrawalsAux = all_withdrawals
+                .Where(w => w.Status == 2 &&
+                            w.DateCreated.HasValue &&
+                            w.DateCreated.Value.Month == currentMonth &&
+                            w.DateCreated.Value.Year == currentYear)
+                .Sum(w => w.AmountWithdrawn);
+
+            double? totalAdminWithdrawalsAux = all_admin_withdrawals
+                .Where(w => w.Status == 2 &&
+                            w.DateCreated.HasValue &&
+                            w.DateCreated.Value.Month == currentMonth &&
+                            w.DateCreated.Value.Year == currentYear)
+                .Sum(w => w.AmountWithdrawnToPay);
+
+            totalWithdrawalsLastFourMonths[0] = new MonthModel
+            {
+                Month = currentMonth.ToString(),
+                Value = (totalNormalWithdrawalsAux + (double)totalAdminWithdrawalsAux)*0.025
+            };
+        }
+
+        // Preenche os meses anteriores
+        for (int i = 1; i <= 4; i++)
+        {
+            int month = currentMonth - i;
+            int year = currentYear;
+
+            // Ajusta o ano se o mês for menor que 1
+            if (month < 1)
+            {
+                month += 12;
+                year--;
+            }
+
+            double totalNormalWithdrawalsAux = all_withdrawals
+                .Where(w => w.Status == 2 &&
+                            w.DateCreated.HasValue &&
+                            w.DateCreated.Value.Month == month &&
+                            w.DateCreated.Value.Year == year)
+                .Sum(w => w.AmountWithdrawn);
+
+            double? totalAdminWithdrawalsAux = all_admin_withdrawals
+                .Where(w => w.Status == 2 &&
+                            w.DateCreated.HasValue &&
+                            w.DateCreated.Value.Month == month &&
+                            w.DateCreated.Value.Year == year)
+                .Sum(w => w.AmountWithdrawnToPay);
+
+            totalWithdrawalsLastFourMonths[i] = new MonthModel
+            {
+                Month = month.ToString(),
+                Value = totalNormalWithdrawalsAux + (double)totalAdminWithdrawalsAux
+            };
+        }
+
+        // Cálculos restantes
+        double totalNormalWithdrawals = all_withdrawals
+            .Where(w => w.Status == 2 &&
+                        w.DateCreated.HasValue &&
+                        w.DateCreated.Value.Month == currentMonth &&
+                        w.DateCreated.Value.Year == currentYear)
+            .Sum(w => w.AmountWithdrawn);
+
+        double? totalAdminWithdrawals = all_admin_withdrawals
+            .Where(w => w.Status == 2 &&
+                        w.DateCreated.HasValue &&
+                        w.DateCreated.Value.Month == currentMonth &&
+                        w.DateCreated.Value.Year == currentYear)
+            .Sum(w => w.AmountWithdrawnToPay);
+
+        double? totalWithdrawalsThisMonth = totalNormalWithdrawals + totalAdminWithdrawals;
 
         int purchasesThisMonth = all_purchases.Count(p =>
             p.PurchaseDate.HasValue &&
@@ -41,7 +117,7 @@ public class GatewayService
                 p.PurchaseDate.HasValue &&
                 p.PurchaseDate.Value.Month == currentMonth &&
                 p.PurchaseDate.Value.Year == currentYear)
-            .Sum(p => p.AmountPaid); // Somando AmountPaid
+            .Sum(p => p.AmountPaid);
 
         int total_purchases_active = all_purchases.Count(p => p.Status == 2);
 
@@ -57,7 +133,7 @@ public class GatewayService
             .Where(w => w.Status == 1)
             .Sum(w => w.AmountWithdrawn);
 
-        double? totalAdminAmountToWithdrawal = all_admin_withdrawals
+        double? totalAdminAmountToWithdraw = all_admin_withdrawals
             .Where(w => w.Status == 1)
             .Sum(w => w.AmountWithdrawnToPay);
 
@@ -73,12 +149,15 @@ public class GatewayService
             TotalAmountActivePurchases = totalAmountActivePurchases,
             TotalAmountPurchasesThisMonth = totalAmountPurchasesThisMonth,
             BankAccountValue = bankAccount.Balance,
-            TotalAdminAmountToWithdraw = (double)totalAdminAmountToWithdrawal
+            TotalAdminAmountToWithdraw = (double)totalAdminAmountToWithdraw,
+            TotalAmountWithdrawn = totalWithdrawalsThisMonth,
+            TotalAmountWithdrawnClients = totalNormalWithdrawals,
+            TotalAmountWithdrawnAdmin = totalAdminWithdrawals,
+            TotalWithdrawalsLastFourMonths = totalWithdrawalsLastFourMonths
         };
 
         return platformInfo;
     }
-
     public async Task<List<Withdrawal>> GetAllWithdrawalsToPay()
     {
         try

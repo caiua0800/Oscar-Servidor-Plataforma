@@ -1,4 +1,11 @@
 using DotnetBackend.Models;
+using System;
+
+public class MonthModel
+{
+    public string Month { get; set; }
+    public double Value { get; set; }
+}
 
 public class PlatformInfo
 {
@@ -12,5 +19,8 @@ public class PlatformInfo
     public decimal TotalAmountActivePurchases { get; set; }
     public decimal TotalAmountPurchasesThisMonth { get; set; }
     public decimal? BankAccountValue { get; set; }
-
+    public double? TotalAmountWithdrawn { get; set; }
+    public double? TotalAmountWithdrawnClients { get; set; }
+    public double? TotalAmountWithdrawnAdmin { get; set; }
+    public MonthModel[] TotalWithdrawalsLastFourMonths { get; set; }
 }
