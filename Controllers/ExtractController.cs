@@ -31,9 +31,10 @@ namespace DotnetBackend.Controllers
         [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetExtractById(string id)
         {
-            var extract = await _extractService.GetExtractByIdAsync(id); // Método para obter um extrato por ID
+            var extract = await _extractService.GetExtractByIdAsync(id); 
             if (extract == null)
             {
+
                 return NotFound(); // Retorna 404 se o extrato não for encontrado
             }
             return Ok(extract); // Retorna o extrato encontrado

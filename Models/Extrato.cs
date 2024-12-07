@@ -14,6 +14,9 @@ namespace DotnetBackend.Models
 
         [BsonElement("clientId")]
         public string? ClientId { get; set; }
+        
+        [BsonElement("dateCreated")]
+        public DateTime? DateCreated { get; set; }
 
         [BsonElement("totalAmount")]
         public decimal TotalAmount { get; set; } // Tornado não-nullable
@@ -24,10 +27,10 @@ namespace DotnetBackend.Models
         // Construtor
         public Extract(string name, decimal totalAmount, string clientId)
         {
-            Name = name;    
+            Name = name;
             TotalAmount = totalAmount;
             Status = 1; // Inicializa o status como 1
-            ClientId = clientId;    
+            ClientId = clientId;
             ExtractId = "E" + Guid.NewGuid().ToString(); // Gera um ID único usando Guid
         }
     }

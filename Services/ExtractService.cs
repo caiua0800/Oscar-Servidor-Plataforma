@@ -20,7 +20,9 @@ namespace DotnetBackend.Services
         public async Task<Extract> CreateExtractAsync(Extract extract)
         {
             extract.ExtractId = "E" + await _counterService.GetNextSequenceAsync("extracts");
-
+            TimeZoneInfo brtZone = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
+            DateTime currentBrasiliaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, brtZone);
+            extract.DateCreated = currentBrasiliaTime;
             await _extracts.InsertOneAsync(extract);
             return extract;
         }
