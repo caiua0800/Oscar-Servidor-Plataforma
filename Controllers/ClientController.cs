@@ -114,6 +114,7 @@ namespace DotnetBackend.Controllers
             decimal amountAvailableToWithdraw = 0;
             decimal amountTotalAvaliableFromContracts = 0;
 
+
             if (client.WalletExtract.Purchases != null)
             {
                 foreach (var purchaseId in client.WalletExtract.Purchases)
@@ -160,6 +161,7 @@ namespace DotnetBackend.Controllers
                     client.Name,
                     client.Email,
                     client.Phone,
+                    client.ExtraBalance,
                     client.Address,
                     client.Balance,
                     client.BlockedBalance,
