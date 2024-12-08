@@ -31,9 +31,11 @@ namespace DotnetBackend.Models
         [BsonElement("profilePictureUrl")]
         public string? ProfilePictureUrl { get; set; }
 
+        [BsonElement("extraBalance")]
+        public decimal? ExtraBalance { get; set; }
+
         [BsonElement("balance")]
         public decimal? Balance { get; set; }
-
         [BsonElement("blockedBalance")]
         public decimal? BlockedBalance { get; set; }
 
@@ -74,7 +76,8 @@ namespace DotnetBackend.Models
             PlatformId = platformID;
             BlockedBalance = 0;
             Balance = 0;
-            ClientProfit = 150;
+            ClientProfit = 1.5;
+            ExtraBalance = 0;
             WalletExtract = new WalletExtract();
             DateCreated = DateTime.UtcNow;
             Status = 1;
@@ -87,6 +90,15 @@ namespace DotnetBackend.Models
                 throw new ArgumentException("O valor a ser adicionado deve ser positivo.");
             }
             Balance += amount;
+        }
+
+        public void AddToExtraBalance(decimal amount)
+        {
+            if (amount < 0)
+            {
+                throw new ArgumentException("O valor a ser adicionado deve ser positivo.");
+            }
+            ExtraBalance += amount;
         }
 
         public void AddToBlockedBalance(decimal amount)
@@ -114,6 +126,19 @@ namespace DotnetBackend.Models
                 throw new InvalidOperationException("Saldo insuficiente para realizar o saque.");
             }
             Balance -= amount;
+        }
+
+        public void WithdrawFromExtraBalance(decimal amount)
+        {
+            if (amount < 0)
+            {
+                throw new ArgumentException("O valor a ser sacado deve ser positivo.");
+            }
+            if (amount > ExtraBalance)
+            {
+                throw new InvalidOperationException("Saldo insuficiente para realizar o saque do Extra.");
+            }
+            ExtraBalance -= amount;
         }
 
         public void WithdrawFromBlockedBalance(decimal amount)

@@ -36,6 +36,8 @@ namespace DotnetBackend.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(Client client)
         {
+            Console.WriteLine(client.Name);
+
             if (client == null || string.IsNullOrEmpty(client.Password))
             {
                 return BadRequest("Client ou a senha está nula.");
@@ -134,14 +136,8 @@ namespace DotnetBackend.Controllers
                 }
             }
 
-            decimal saldoExtra = 0;
 
-            if(amountTotalAvaliableFromContracts < (decimal)(client.Balance - client.BlockedBalance)){
-                saldoExtra = (decimal)(client.Balance - client.BlockedBalance) - (decimal)amountTotalAvaliableFromContracts;
-                Console.WriteLine($"O Cliente {client.Name} possui saldo extra de {saldoExtra}");
-            }
-
-            amountAvailableToWithdraw += saldoExtra;
+            amountAvailableToWithdraw += (decimal)client.ExtraBalance;
 
             var withdrawalDetails = new List<Withdrawal>();
             if (client.WalletExtract.Withdrawals != null)

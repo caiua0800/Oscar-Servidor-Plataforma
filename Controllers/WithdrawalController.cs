@@ -22,22 +22,17 @@ public class WithdrawalController : ControllerBase
     {
         if (withdrawal == null)
         {
-            return BadRequest("Purchase is null.");
+            return BadRequest("Withdraw is null.");
         }
 
+        Console.WriteLine("Criando Saque");
         var createdWithdrawal = await _withdrawalService.CreateWithdrawalAsync(withdrawal);
-        return CreatedAtAction(nameof(GetWithdrawalById), new { id = createdWithdrawal.WithdrawalId }, createdWithdrawal);
-    }
 
-    [HttpPost("extraBalance")]
-    public async Task<IActionResult> CreateExtraBalance([FromBody] Withdrawal withdrawal)
-    {
-        if (withdrawal == null)
+        if (string.IsNullOrEmpty(createdWithdrawal.WithdrawalId))
         {
-            return BadRequest("Purchase is null.");
+            return BadRequest("WithdrawalId não foi gerado.");
         }
 
-        var createdWithdrawal = await _withdrawalService.CreateWithdrawalExtraBalanceAsync(withdrawal);
         return CreatedAtAction(nameof(GetWithdrawalById), new { id = createdWithdrawal.WithdrawalId }, createdWithdrawal);
     }
 

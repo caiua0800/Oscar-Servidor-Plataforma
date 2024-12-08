@@ -13,7 +13,7 @@ public class WithdrawalService
     private readonly ClientService _clientService;
     private readonly PurchaseService _purchaseService;
     private readonly BankAccountService _bankAccountService;
-    public WithdrawalService(MongoDbService mongoDbService, ClientService clientService, 
+    public WithdrawalService(MongoDbService mongoDbService, ClientService clientService,
     CounterService counterService, ExtractService extractService, PurchaseService purchaseService, BankAccountService bankAccountService)
     {
         _withdrawals = mongoDbService.GetCollection<Withdrawal>("Withdrawal");
@@ -34,78 +34,83 @@ public class WithdrawalService
             withdrawal.DateCreated = brasiliaTime;
         }
 
-        if (withdrawal.ItemId == null)
-        {
-            withdrawal.ItemId = "Retirado";
-        }
-        var client = await _clientService.GetClientByIdAsync(withdrawal.ClientId);
+        withdrawal.WithdrawalId = "W" + await _counterService.GetNextSequenceAsync("withdraw");
+
+        Client? client = await _clientService.GetClientByIdAsync(withdrawal.ClientId);
+
         if (client == null)
         {
             throw new InvalidOperationException("Cliente não encontrado.");
         }
 
-        try
+        var valorASerRetirado = (decimal)withdrawal.AmountWithdrawn;
+
+        if (withdrawal.WithdrawnItems == null)
         {
-            await _clientService.WithdrawFromBalanceAsync(withdrawal.ClientId, (decimal)withdrawal.AmountWithdrawn);
-            await _purchaseService.WithdrawFromPurchaseAsync(withdrawal.ItemId, (decimal)withdrawal.AmountWithdrawn);
-        }
-        catch (InvalidOperationException ex)
-        {
-            Console.WriteLine($"Erro ao tentar sacar: {ex.Message}");
-            throw new InvalidOperationException("Não foi possível realizar o saque: " + ex.Message);
+            withdrawal.WithdrawnItems = new List<string>();
         }
 
-        withdrawal.WithdrawalId = "W" + await _counterService.GetNextSequenceAsync("withdrawal");
-        withdrawal.AmountWithdrawn = withdrawal.AmountWithdrawn;
+        if (client.ExtraBalance >= valorASerRetirado)
+        {
+            await _clientService.WithdrawFromExtraBalanceAsync(withdrawal.ClientId, valorASerRetirado);
+            withdrawal.WithdrawnItems.Add("Extra Balance");
+            valorASerRetirado = 0;
+        }
+        else if (client.ExtraBalance > 0)
+        {
+            valorASerRetirado -= (decimal)client.ExtraBalance;
+            await _clientService.WithdrawFromExtraBalanceAsync(withdrawal.ClientId, (decimal)client.ExtraBalance);
+            withdrawal.WithdrawnItems.Add("Extra Balance");
+        }
 
-        await _withdrawals.InsertOneAsync(withdrawal);
-        var extract = new Extract($"Saque do contrato {withdrawal.ItemId}", (decimal)withdrawal.AmountWithdrawn, withdrawal.ClientId);
+        if (valorASerRetirado > 0)
+        {
+            List<Purchase> purchases = await _purchaseService.GetPurchasesByClientIdAsync(withdrawal.ClientId);
+
+            foreach (Purchase purchase in purchases)
+            {
+                if (valorASerRetirado > 0)
+                {
+                    if (purchase.Status == 2 || purchase.Status == 3)
+                    {
+                        DateTime dataLimite = DateTime.Now.AddDays(-90);
+
+                        // Verifique se FirstIncreasement não é nulo
+                        if (purchase.FirstIncreasement.HasValue && purchase.FirstIncreasement < dataLimite)
+                        {
+                            if ((purchase.CurrentIncome - purchase.AmountWithdrawn) >= valorASerRetirado)
+                            {
+                                withdrawal.WithdrawnItems.Add(purchase.PurchaseId);
+                                await _purchaseService.WithdrawFromPurchaseAsync(purchase.PurchaseId, valorASerRetirado);
+                                await _clientService.WithdrawFromBalanceAsync(withdrawal.ClientId, valorASerRetirado);
+                                valorASerRetirado = 0;
+                            }
+                            else if ((purchase.CurrentIncome - purchase.AmountWithdrawn) > 0)
+                            {
+                                valorASerRetirado -= (purchase.CurrentIncome - purchase.AmountWithdrawn);
+                                withdrawal.WithdrawnItems.Add(purchase.PurchaseId);
+                                await _clientService.WithdrawFromBalanceAsync(withdrawal.ClientId, purchase.CurrentIncome - purchase.AmountWithdrawn);
+                                await _purchaseService.WithdrawFromPurchaseAsync(purchase.PurchaseId, purchase.CurrentIncome - purchase.AmountWithdrawn);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        var stringExtrato = "";
+        foreach (string aiaiPapai in withdrawal.WithdrawnItems)
+        {
+            stringExtrato += aiaiPapai + "-";  // Corrigido para adicionar corretamente cada item ao extrato
+        }
+
+        var extract = new Extract($"Saque da Carteira, retirada de ${stringExtrato}", (decimal)withdrawal.AmountWithdrawn, withdrawal.ClientId);
         await _extractService.CreateExtractAsync(extract);
         await _clientService.AddWithdrawalAsync(withdrawal.ClientId, withdrawal.WithdrawalId);
-
+        await _withdrawals.InsertOneAsync(withdrawal);
         return withdrawal;
     }
 
-    public async Task<Withdrawal> CreateWithdrawalExtraBalanceAsync(Withdrawal withdrawal)
-    {
-        if (withdrawal.DateCreated == null)
-        {
-            TimeZoneInfo brasiliaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
-            DateTime utcNow = DateTime.UtcNow;
-            DateTime brasiliaTime = TimeZoneInfo.ConvertTimeFromUtc(utcNow, brasiliaTimeZone);
-            withdrawal.DateCreated = brasiliaTime;
-        }
-
-        if (withdrawal.ItemId == null)
-        {
-            withdrawal.ItemId = "Retirado";
-        }
-        var client = await _clientService.GetClientByIdAsync(withdrawal.ClientId);
-        if (client == null)
-        {
-            throw new InvalidOperationException("Cliente não encontrado.");
-        }
-
-        try
-        {
-            await _clientService.WithdrawFromBalanceAsync(withdrawal.ClientId, (decimal)withdrawal.AmountWithdrawn);
-        }
-        catch (InvalidOperationException ex)
-        {
-            Console.WriteLine($"Erro ao tentar sacar: {ex.Message}");
-            throw new InvalidOperationException("Não foi possível realizar o saque: " + ex.Message);
-        }
-
-        withdrawal.WithdrawalId = "W" + await _counterService.GetNextSequenceAsync("withdrawal");
-        withdrawal.AmountWithdrawn = withdrawal.AmountWithdrawn;
-
-        await _withdrawals.InsertOneAsync(withdrawal);
-        var extract = new Extract($"Saque da Carteira", (decimal)withdrawal.AmountWithdrawn, withdrawal.ClientId);
-        await _extractService.CreateExtractAsync(extract);
-        await _clientService.AddWithdrawalAsync(withdrawal.ClientId, withdrawal.WithdrawalId);
-
-        return withdrawal;
-    }
 
     public async Task<Withdrawal?> GetWithdrawalByIdAsync(string id)
     {
@@ -146,21 +151,34 @@ public class WithdrawalService
 
         if (existingWithdrawal != null)
         {
-            existingWithdrawal.Status = newStatus;
-            var updateDefinition = Builders<Withdrawal>.Update.Set(w => w.Status, newStatus);
-            await _withdrawals.UpdateOneAsync(w => w.WithdrawalId == withdrawalId, updateDefinition);
-            await _bankAccountService.WithdrawFromBalanceAsync(withdrawalId, (decimal)existingWithdrawal.AmountWithdrawn);
-            Console.WriteLine($"Saque encontrado: {existingWithdrawal.WithdrawalId}, novo status {newStatus}");
-
-            if (newStatus == 3)
+            try
             {
-                Console.WriteLine("Cancelando");
-                await _purchaseService.RemoveSomeAmountWithdrawn(existingWithdrawal.ItemId, (decimal)(existingWithdrawal.AmountWithdrawn)); //Coloquei dividido por 2 pq algum bug satânico tava de algum jeito dobrando esse valor não sei Jesus como
-                var extract = new Extract($"Devolução do Saque Negado referente a #{existingWithdrawal.ItemId}", (decimal)existingWithdrawal.AmountWithdrawn, existingWithdrawal.ClientId);
-                await _extractService.CreateExtractAsync(extract);
-                Console.WriteLine($"Valor de {existingWithdrawal.AmountWithdrawn} adicionado ao saldo do cliente {existingWithdrawal.ClientId}");
+                if (newStatus == 2)
+                {
+                    await _bankAccountService.WithdrawFromBalanceAsync(withdrawalId, (decimal)existingWithdrawal.AmountWithdrawn);
+                }
+
+                if (newStatus == 3)
+                {
+                    Console.WriteLine("Cancelando");
+                    await _clientService.AddToExtraBalanceAsync(existingWithdrawal.ClientId, (decimal)existingWithdrawal.AmountWithdrawn);
+                    var extract = new Extract($"Saque {existingWithdrawal.WithdrawalId} Negado, Valor de R${existingWithdrawal.AmountWithdrawn} adicionado à carteira ", (decimal)existingWithdrawal.AmountWithdrawn, existingWithdrawal.ClientId);
+                    await _extractService.CreateExtractAsync(extract);
+                }
+
+                existingWithdrawal.Status = newStatus;
+                var updateDefinition = Builders<Withdrawal>.Update.Set(w => w.Status, newStatus);
+                await _withdrawals.UpdateOneAsync(w => w.WithdrawalId == withdrawalId, updateDefinition);
+                Console.WriteLine($"Saque encontrado: {existingWithdrawal.WithdrawalId}, novo status {newStatus}");
+
+                return true;
             }
-            return true;
+            catch (Exception ex)
+            {
+                // Log the error or handle it accordingly
+                Console.WriteLine($"Erro ao atualizar status ou processar a retirada: {ex.Message}");
+                return false; // Retorna falso se houve um erro
+            }
         }
         else
         {
@@ -168,6 +186,5 @@ public class WithdrawalService
             return false;
         }
     }
-
 
 }

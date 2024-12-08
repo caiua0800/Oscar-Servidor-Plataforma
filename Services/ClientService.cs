@@ -20,6 +20,7 @@ namespace DotnetBackend.Services
 
         public async Task<Client> CreateClientAsync(Client client, string password)
         {
+            Console.WriteLine("criando cliente.");
             if (string.IsNullOrWhiteSpace(client.Id))
             {
                 throw new ArgumentException("O CPF (Id) deve ser fornecido.");
@@ -33,7 +34,7 @@ namespace DotnetBackend.Services
 
             var passwordHasher = new PasswordHasher<Client>();
             client.Password = passwordHasher.HashPassword(client, password);
-
+            client.ClientProfit = 1.5;
             client.DateCreated = DateTime.UtcNow;
             client.Status = 1;
             Console.WriteLine($"Data de Criação antes da inserção: {client.DateCreated}");
@@ -60,7 +61,7 @@ namespace DotnetBackend.Services
 
         public async Task<string> UploadProfilePictureAsync(IFormFile file)
         {
-            var bucketName = "oscar-plataforma"; 
+            var bucketName = "oscar-plataforma";
             var fileName = Guid.NewGuid().ToString() + Path.GetExtension(file.FileName);
 
             try
@@ -95,6 +96,20 @@ namespace DotnetBackend.Services
             return result.ModifiedCount > 0;
         }
 
+        public async Task<bool> AddToExtraBalanceAsync(string clientId, decimal amount)
+        {
+            var client = await GetClientByIdAsync(clientId);
+            if (client == null)
+            {
+                throw new InvalidOperationException("Cliente não encontrado.");
+            }
+
+            client.AddToExtraBalance(amount);
+            var updateDefinition = Builders<Client>.Update.Set(c => c.ExtraBalance, client.ExtraBalance);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
         public async Task<bool> AddToBlockedBalanceAsync(string clientId, decimal amount)
         {
             var client = await GetClientByIdAsync(clientId);
@@ -124,6 +139,22 @@ namespace DotnetBackend.Services
             var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
             return result.ModifiedCount > 0;
         }
+
+        public async Task<bool> WithdrawFromExtraBalanceAsync(string clientId, decimal amount)
+        {
+            var client = await GetClientByIdAsync(clientId);
+            if (client == null)
+            {
+                throw new InvalidOperationException("Cliente não encontrado.");
+            }
+
+            client.WithdrawFromExtraBalance(amount);
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.ExtraBalance, client.ExtraBalance);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
 
         public async Task<bool> WithdrawFromBlockedBalanceAsync(string clientId, decimal amount)
         {

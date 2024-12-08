@@ -33,7 +33,6 @@ namespace DotnetBackend.Services
         public async Task<Purchase> CreatePurchaseAsync(Purchase purchase)
         {
             purchase.PurchaseId = "A" + await _counterService.GetNextSequenceAsync("purchases");
-
             var contractId = "Model" + purchase.Type;
             var contract = await _contractService.GetContractByIdAsync(contractId);
             Client client = await _clientService.GetClientByIdAsync(purchase.ClientId);
