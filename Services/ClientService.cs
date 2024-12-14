@@ -12,10 +12,12 @@ namespace DotnetBackend.Services
     public class ClientService
     {
         private readonly IMongoCollection<Client> _clients;
+        private readonly EmailService _emailService; // Adicione esta linha
 
-        public ClientService(MongoDbService mongoDbService)
+        public ClientService(MongoDbService mongoDbService, EmailService emailService) // Modifique o construtor
         {
             _clients = mongoDbService.GetCollection<Client>("Clients");
+            _emailService = emailService; // Inicialize a instância de EmailService
         }
 
         public async Task<Client> CreateClientAsync(Client client, string password)
@@ -39,6 +41,13 @@ namespace DotnetBackend.Services
             client.Status = 1;
             Console.WriteLine($"Data de Criação antes da inserção: {client.DateCreated}");
             await _clients.InsertOneAsync(client);
+
+            await _emailService.SendEmailAsync(
+                client.Email,
+                "Cadastro realizado com sucesso",
+                "Obrigado por se cadastrar!",
+                "<strong>Obrigado por se cadastrar!</strong>"
+            );
             return client;
         }
 

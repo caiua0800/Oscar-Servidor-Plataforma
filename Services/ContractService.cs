@@ -2,6 +2,7 @@ using MongoDB.Driver;
 using DotnetBackend.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MongoDB.Bson;
 
 namespace DotnetBackend.Services
 {
@@ -20,7 +21,7 @@ namespace DotnetBackend.Services
         public async Task<ContractModel> CreateContractAsync(ContractModel contractModel)
         {
             int nextSequence = await _counterService.GetNextSequenceAsync("purchaseModels");
-            contractModel.Id = "Model" + nextSequence; 
+            contractModel.Id = "Model" + nextSequence;
 
             await _contractModels.InsertOneAsync(contractModel);
             return contractModel;
@@ -37,9 +38,15 @@ namespace DotnetBackend.Services
             return await _contractModels.Find(c => c.Id == id).FirstOrDefaultAsync(); // Busca o contrato pelo ID
         }
 
+        public async Task<bool> ReplaceContractAsync(string id, ContractModel updatedModel)
+        {
+            var result = await _contractModels.ReplaceOneAsync(c => c.Id == id, updatedModel);
+            return result.ModifiedCount > 0; // Retorna true se o documento foi modificado
+        }
+
         public async Task<List<ContractModel>> GetAllContractsAsync()
         {
-            return await _contractModels.Find(_ => true).ToListAsync(); // Retorna todos os contratos
+            return await _contractModels.Find(_ => true).ToListAsync();
         }
 
         public async Task<bool> UpdateContractAsync(string id, ContractModel contractModel)

@@ -100,7 +100,9 @@ namespace DotnetBackend.Services
                 var jsonContent = JsonSerializer.Serialize(requestPayload);
                 var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                HttpResponseMessage response = await httpClient.PostAsync("http://servidoroscar.modelodesoftwae.com:3030/pix", httpContent);
+                // HttpResponseMessage response = await httpClient.PostAsync("http://servidoroscar.modelodesoftwae.com:3030/pix", httpContent);
+                HttpResponseMessage response = await httpClient.PostAsync("http://localhost:3030/pix", httpContent);
+
 
                 if (response.IsSuccessStatusCode)
                 {

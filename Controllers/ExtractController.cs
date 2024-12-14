@@ -11,22 +11,19 @@ namespace DotnetBackend.Controllers
     [Route("api/[controller]")]
     public class ExtractController : ControllerBase
     {
-        private readonly ExtractService _extractService; // Corrigido para usar ExtractService
-
-        public ExtractController(ExtractService extractService) // Alterado para Extrato
+        private readonly ExtractService _extractService;
+        public ExtractController(ExtractService extractService) 
         {
             _extractService = extractService;
         }
 
-        // Método para obter todos os extratos
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var extracts = await _extractService.GetAllExtractsAsync(); // Método para obter extratos
-            return Ok(extracts); // Retorna a lista de extratos
+            var extracts = await _extractService.GetAllExtractsAsync();
+            return Ok(extracts);
         }
 
-        // Método para obter um extrato pela ID
         [HttpGet("{id}")]
         [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetExtractById(string id)
@@ -35,31 +32,30 @@ namespace DotnetBackend.Controllers
             if (extract == null)
             {
 
-                return NotFound(); // Retorna 404 se o extrato não for encontrado
+                return NotFound(); 
             }
-            return Ok(extract); // Retorna o extrato encontrado
+            return Ok(extract);
         }
 
-        // Método para obter extratos por ClientId
         [HttpGet("client/{id}")]
         [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetExtractsByClientId(string id)
         {
-            var extracts = await _extractService.GetExtractsByClientIdAsync(id); // Método para obter extratos por clientId
-            if (extracts == null || extracts.Count == 0) // Verifica se a lista está vazia ou é nula
+            var extracts = await _extractService.GetExtractsByClientIdAsync(id); 
+            if (extracts == null || extracts.Count == 0) 
             {
-                return NotFound(); // Retorna 404 se não houver extratos
+                return NotFound(); 
             }
-            return Ok(extracts); // Retorna a lista de extratos
+            return Ok(extracts); 
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            var result = await _extractService.DeleteExtractAsync(id); // Método para excluir extrato
+            var result = await _extractService.DeleteExtractAsync(id);
             if (!result)
             {
-                return NotFound(); // Retorna 404 se o extrato não for encontrado
+                return NotFound(); 
             }
             return NoContent();
         }

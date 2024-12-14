@@ -5,9 +5,8 @@ namespace DotnetBackend.Models
 {
     public class BankAccount
     {
-        // Adiciona uma propriedade Id que será usada como o identificador único
         [BsonId]
-        public ObjectId Id { get; set; } // O MongoDB usa ObjectId por padrão, que é um tipo do MongoDB
+        public ObjectId Id { get; set; }
 
         [BsonElement("accountHolderName")]
         public required string AccountHolderName { get; set; }
@@ -15,7 +14,6 @@ namespace DotnetBackend.Models
         [BsonElement("balance")]
         public decimal? Balance { get; set; }
 
-        // Para a compatibilidade com o construtor padrão do modelo
         public BankAccount() { }
 
         public BankAccount(string accountHolderName, decimal? balance)

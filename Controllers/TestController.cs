@@ -17,14 +17,13 @@ namespace DotnetBackend.Controllers
         }
 
         [HttpGet]
-        [Route("clients")] // Adicionar rota específica para clientes
+        [Route("clients")]
         public IActionResult GetClients()
         {
-            // Acessar a coleção de clientes especificamente
-            var collection = _mongoService.GetCollection<Client>("Clients"); // Certifique-se que o nome "Clients" está correto no MongoDB
-            var clients = collection.Find(_ => true).ToList(); // Busca todos os documentos
+            var collection = _mongoService.GetCollection<Client>("Clients"); 
+            var clients = collection.Find(_ => true).ToList(); 
 
-            return Ok(clients); // Retorna os clientes como resposta
+            return Ok(clients); 
         }
     }
 }

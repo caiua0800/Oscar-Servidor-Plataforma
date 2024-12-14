@@ -169,3 +169,5 @@
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.pdb
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/DotnetBackend.genruntimeconfig.cache
 /Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/obj/Debug/net8.0/ref/DotnetBackend.dll
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/SendGrid.dll
+/Users/caiuamello/Desktop/CLIENTES/OSCAR/WhiteLabel/ServidorPlataforma/bin/Debug/net8.0/StarkbankEcdsa.dll

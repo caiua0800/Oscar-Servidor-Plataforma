@@ -8,8 +8,8 @@ namespace DotnetBackend.Models
     public class Chat
     {
 
-        [BsonId] // Anotação para informar que este é o campo `_id`
-        public ObjectId Id { get; set; } // O campo que corresponde ao `_id` no MongoDB
+        [BsonId]
+        public ObjectId Id { get; set; }
 
         [BsonElement("clientId")]
         public required string ClientId { get; set; }

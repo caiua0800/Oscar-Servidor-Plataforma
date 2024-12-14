@@ -22,7 +22,6 @@ public class Address
     [BsonElement("country")]
     public string? Country { get; set; }
 
-    // Construtor para a classe Address
     public Address(string street, string number, string zipcode, string city, string state)
     {
         Street = street; // Inicializa a rua

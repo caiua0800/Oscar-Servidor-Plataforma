@@ -21,13 +21,16 @@ public class ContractModel
     public double Gain { get; set; }
 
     [BsonElement("duration")]
-    public int Duration { get; set; } // Duração do contrato
+    public int Duration { get; set; }
 
-    [BsonElement("description")] // Aqui adicionamos o campo de descrição
+    [BsonElement("firstWithdraw")]
+    public int FirstWithdraw { get; set; }
+
+    [BsonElement("description")]
     public string Description { get; set; }
 
     // Construtor
-    public ContractModel(string title, double value, string yearlyPlus, int duration, string description, double gain)
+    public ContractModel(string title, double value, string yearlyPlus, int duration, string description, double gain, int firstWithdraw)
     {
         Title = title;
         Value = value;
@@ -35,6 +38,7 @@ public class ContractModel
         Duration = duration;
         Description = description;
         Gain = gain;
+        FirstWithdraw = firstWithdraw;
     }
 }
 

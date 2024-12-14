@@ -33,7 +33,7 @@ namespace DotnetBackend.Controllers
         public async Task<IActionResult> GetAll()
         {
             var purchases = await _purchaseService.GetAllPurchasesAsync();
-            return Ok(purchases); // Retorna a lista de compras
+            return Ok(purchases); 
         }
 
         [HttpGet("{id}")]
@@ -86,9 +86,9 @@ namespace DotnetBackend.Controllers
             var result = await _purchaseService.DeletePurchaseAsync(id);
             if (!result)
             {
-                return NotFound(); // Retorna 404 se a compra não for encontrada
+                return NotFound(); 
             }
-            return NoContent(); // Retorna 204 se a exclusão foi bem-sucedida
+            return NoContent(); 
         }
 
         [HttpPut("{id}")]

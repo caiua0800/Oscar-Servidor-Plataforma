@@ -3,6 +3,7 @@ using DotnetBackend.Models;
 using DotnetBackend.Services;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.VisualBasic;
 
 namespace DotnetBackend.Controllers
 {
@@ -47,6 +48,27 @@ namespace DotnetBackend.Controllers
             return Ok(contracts); // Retorna a lista de contratos
         }
 
+        [HttpPut("edit/{id}")]
+        public async Task<IActionResult> UpdateField(string id, [FromBody] ContractModel updatedModel)
+        {
+
+            if (updatedModel == null)
+            {
+                return BadRequest("Modelo de contrato não pode ser nulo.");
+            }
+
+            // O ID no novo modelo deve corresponder ao ID fornecido na URL
+            updatedModel.Id = id;
+
+            var result = await _contractService.ReplaceContractAsync(id, updatedModel);
+
+            if (!result)
+            {
+                return NotFound(); // Retorna 404 se o contrato não for encontrado
+            }
+            return NoContent(); // Retorna 204 se a atualização for bem-sucedida
+        }
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
@@ -63,7 +85,7 @@ namespace DotnetBackend.Controllers
         {
             if (contractModel == null)
             {
-                return BadRequest("Modelo de contrato não pode ser nulo."); 
+                return BadRequest("Modelo de contrato não pode ser nulo.");
             }
 
             var result = await _contractService.UpdateContractAsync(id, contractModel);
@@ -74,6 +96,13 @@ namespace DotnetBackend.Controllers
             return NoContent(); // Retorna 204 se a atualização for bem-sucedida
         }
 
-
+    }
+    public class UpdateFieldModel
+    {
+        public string FieldName { get; set; }
+        public string StringValue { get; set; }
+        public int? IntValue { get; set; }
+        public double? DoubleValue { get; set; }
+        public bool? BoolValue { get; set; }
     }
 }

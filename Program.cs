@@ -50,6 +50,13 @@ builder.Services.AddScoped<BankAccountService>();
 builder.Services.AddScoped<AdminWithdrawalService>();
 builder.Services.AddScoped<WebSocketHandler>();
 
+builder.Services.AddScoped<EmailService>(provider =>
+{
+    var configuration = provider.GetRequiredService<IConfiguration>();
+    string apiKey = configuration["EMAIL_API_KEY"];
+    return new EmailService(apiKey);
+});
+
 builder.Services.AddControllers();
 
 var key = builder.Configuration["Jwt:Key"] ?? "default-key";

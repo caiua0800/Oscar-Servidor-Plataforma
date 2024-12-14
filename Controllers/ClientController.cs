@@ -251,7 +251,6 @@ namespace DotnetBackend.Controllers
                 await _purchaseService.UpdatePurchaseAsync(purchase.PurchaseId, purchase);
             }
 
-            // Exclui a conta do cliente
             var result = await _clientService.ExcludeAccount(id);
             if (!result)
             {

@@ -40,7 +40,6 @@ namespace DotnetBackend.Controllers
             return Ok(vendas);
         }
 
-        // Método para obter uma compra pela ID
         [HttpGet("{id}")]
         [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetVendaById(string id)
