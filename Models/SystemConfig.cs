@@ -6,6 +6,8 @@ using System;
 namespace DotnetBackend.Models;
 public class SystemConfig
 {
+    [BsonId]
+    public ObjectId Id { get; set; }
     [BsonElement("name")]
     public required string Name { get; set; }
 

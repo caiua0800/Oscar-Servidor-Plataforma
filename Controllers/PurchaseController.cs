@@ -11,10 +11,13 @@ namespace DotnetBackend.Controllers
     public class PurchaseController : ControllerBase
     {
         private readonly PurchaseService _purchaseService;
+        private readonly AuthService _authService;
 
-        public PurchaseController(PurchaseService purchaseService)
+
+        public PurchaseController(PurchaseService purchaseService, AuthService authService)
         {
             _purchaseService = purchaseService;
+            _authService = authService;
         }
 
         [HttpPost]
@@ -32,8 +35,15 @@ namespace DotnetBackend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é admin");
+            }
+            
             var purchases = await _purchaseService.GetAllPurchasesAsync();
-            return Ok(purchases); 
+            return Ok(purchases);
         }
 
         [HttpGet("{id}")]
@@ -50,6 +60,13 @@ namespace DotnetBackend.Controllers
         [HttpGet("client/{id}")]
         public async Task<IActionResult> GetPurchasesByClientId(string id)
         {
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfIsReallyTheClient(id, token))
+            {
+                return Forbid("Você não é ela");
+            }
+
             var purchases = await _purchaseService.GetPurchasesByClientIdAsync(id);
             if (purchases == null || purchases.Count == 0)
             {
@@ -86,14 +103,22 @@ namespace DotnetBackend.Controllers
             var result = await _purchaseService.DeletePurchaseAsync(id);
             if (!result)
             {
-                return NotFound(); 
+                return NotFound();
             }
-            return NoContent(); 
+            return NoContent();
         }
 
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(string id, [FromBody] Purchase newPurchase)
         {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é admin");
+            }
+
             var result = await _purchaseService.UpdatePurchaseAsync(id, newPurchase);
             if (!result)
             {
@@ -105,6 +130,14 @@ namespace DotnetBackend.Controllers
         [HttpPut("{id}/{newStatus}")]
         public async Task<IActionResult> UpdateStatus(string id, int newStatus)
         {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é admin");
+            }
+
             var result = await _purchaseService.UpdateStatus(id, newStatus);
             if (!result)
             {
@@ -116,6 +149,13 @@ namespace DotnetBackend.Controllers
         [HttpPut("{id}/add/{amount}")]
         public async Task<IActionResult> AddIncrement(string id, decimal amount)
         {
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é admin");
+            }
+
             var result = await _purchaseService.AddIncrementToPurchaseAsync(id, amount);
             if (!result)
             {
@@ -127,6 +167,7 @@ namespace DotnetBackend.Controllers
         [HttpPut("cancel/{id}")]
         public async Task<IActionResult> CancelPurchase(string id)
         {
+
             var result = await _purchaseService.CancelPurchase(id);
             if (!result)
             {
@@ -138,6 +179,14 @@ namespace DotnetBackend.Controllers
         [HttpPut("{id}/anticipate-profit/{increasement}")]
         public async Task<IActionResult> AnticipateProfit(string id, decimal increasement)
         {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é admin");
+            }
+
             var result = await _purchaseService.AnticipateProfit(id, increasement);
 
             if (!result)

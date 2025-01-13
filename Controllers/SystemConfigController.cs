@@ -27,16 +27,21 @@ public class SystemConfigController : ControllerBase
 
         try
         {
+            var existsVariable = await _systemConfigService.GetSystemConfigByNameAsync(systemConfig.Name);
+
+            if (existsVariable != null)
+            {
+                return StatusCode(460, $"Já existe uma configuração com esse nome.");
+            }
+
             var createdSystemConfig = await _systemConfigService.CreateSystemConfigAsync(systemConfig);
             return CreatedAtAction(nameof(GetSystemConfigByName), new { name = createdSystemConfig.Name }, createdSystemConfig);
         }
         catch (Exception ex)
         {
-            // Log the exception (consider using a logging framework)
             return StatusCode(500, "Internal server error: " + ex.Message);
         }
     }
-
 
     [HttpGet]
     public async Task<IActionResult> GetAll()
@@ -45,7 +50,43 @@ public class SystemConfigController : ControllerBase
         return Ok(systemConfigs);
     }
 
-    [HttpGet("{id}")]
+    [HttpDelete("{name}")]
+    public async Task<IActionResult> DeleteSystemConfigByName(string name)
+    {
+        var existsVariable = await _systemConfigService.GetSystemConfigByNameAsync(name);
+        if (existsVariable == null)
+        {
+            return NotFound($"Configuração com o nome '{name}' não encontrada.");
+        }
+
+        try
+        {
+            await _systemConfigService.DeleteSystemConfigByNameAsync(name);
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, "Internal server error: " + ex.Message);
+        }
+    }
+
+    [HttpPut("{name}/{newValue}")]
+    public async Task<IActionResult> EditSystemConfig(string name, string newValue)
+    {
+        if (string.IsNullOrEmpty(name) || string.IsNullOrEmpty(newValue))
+            return BadRequest("Envie todas as informações para utilizar a rota.");
+
+        var updatedConfig = await _systemConfigService.EditSystemConfigByName(name, newValue);
+
+        if (updatedConfig == null)
+        {
+            return NotFound("Configuração não encontrada.");
+        }
+
+        return Ok(updatedConfig);
+    }
+
+    [HttpGet("{name}")]
     public async Task<IActionResult> GetSystemConfigByName(string name)
     {
         var purchase = await _systemConfigService.GetSystemConfigByNameAsync(name);

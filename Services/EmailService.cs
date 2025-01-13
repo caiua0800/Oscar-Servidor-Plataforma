@@ -24,7 +24,8 @@ namespace DotnetBackend.Services
             try
             {
                 var response = await client.SendEmailAsync(msg);
-                if (response.StatusCode != System.Net.HttpStatusCode.OK)
+
+                if (response.StatusCode != System.Net.HttpStatusCode.OK && response.StatusCode != System.Net.HttpStatusCode.Accepted)
                 {
                     var responseBody = await response.Body.ReadAsStringAsync();
                     throw new Exception($"Falha ao enviar e-mail: {response.StatusCode} - {responseBody}");
@@ -32,7 +33,6 @@ namespace DotnetBackend.Services
             }
             catch (Exception ex)
             {
-                // Lógica de tratamento de erro
                 Console.WriteLine($"Exceção ao enviar e-mail: {ex.Message}");
                 throw;
             }

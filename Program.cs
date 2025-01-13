@@ -49,6 +49,12 @@ builder.Services.AddScoped<ChatService>();
 builder.Services.AddScoped<BankAccountService>();
 builder.Services.AddScoped<AdminWithdrawalService>();
 builder.Services.AddScoped<WebSocketHandler>();
+builder.Services.AddScoped<NewsService>();
+builder.Services.AddScoped<IndicationService>();
+builder.Services.AddScoped<AuthService>();
+builder.Services.AddScoped<PasswordResetService>();
+builder.Services.AddScoped<TokenService>();
+
 
 builder.Services.AddScoped<EmailService>(provider =>
 {
@@ -96,7 +102,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseCors("AllowAllOrigins"); // Use a política específica de CORS
+app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 

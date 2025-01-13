@@ -5,6 +5,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using Amazon.S3;
 using Amazon.S3.Transfer;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.VisualBasic;
 
 
 namespace DotnetBackend.Services
@@ -13,16 +15,18 @@ namespace DotnetBackend.Services
     {
         private readonly IMongoCollection<Client> _clients;
         private readonly EmailService _emailService; // Adicione esta linha
+        private readonly ExtractService _extractService; // Adicione esta linha
 
-        public ClientService(MongoDbService mongoDbService, EmailService emailService) // Modifique o construtor
+
+        public ClientService(MongoDbService mongoDbService, EmailService emailService, ExtractService extractService) // Modifique o construtor
         {
             _clients = mongoDbService.GetCollection<Client>("Clients");
             _emailService = emailService; // Inicialize a instância de EmailService
+            _extractService = extractService;
         }
 
         public async Task<Client> CreateClientAsync(Client client, string password)
         {
-            Console.WriteLine("criando cliente.");
             if (string.IsNullOrWhiteSpace(client.Id))
             {
                 throw new ArgumentException("O CPF (Id) deve ser fornecido.");
@@ -68,6 +72,12 @@ namespace DotnetBackend.Services
             return await _clients.Find(c => c.Id == normalizedId).FirstOrDefaultAsync();
         }
 
+        public async Task<Client?> GetClientByEmailAsync(string email)
+        {
+            var normalizedEmail = email.Trim();
+            return await _clients.Find(c => c.Email == normalizedEmail).FirstOrDefaultAsync();
+        }
+
         public async Task<string> UploadProfilePictureAsync(IFormFile file)
         {
             var bucketName = "oscar-plataforma";
@@ -90,6 +100,20 @@ namespace DotnetBackend.Services
             }
         }
 
+        public async Task<bool> UpdatePasswordAsync(string clientId, string newPassword)
+        {
+            var client = await GetClientByIdAsync(clientId);
+            if (client == null) throw new InvalidOperationException("Cliente não encontrado.");
+
+            var passwordHasher = new PasswordHasher<Client>();
+            client.Password = passwordHasher.HashPassword(client, newPassword);
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.Password, client.Password);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+
+            return result.ModifiedCount > 0;
+        }
+
         public async Task<bool> AddToBalanceAsync(string clientId, decimal amount)
         {
             var client = await GetClientByIdAsync(clientId);
@@ -108,6 +132,7 @@ namespace DotnetBackend.Services
         public async Task<bool> AddToExtraBalanceAsync(string clientId, decimal amount)
         {
             var client = await GetClientByIdAsync(clientId);
+
             if (client == null)
             {
                 throw new InvalidOperationException("Cliente não encontrado.");
@@ -115,6 +140,8 @@ namespace DotnetBackend.Services
 
             client.AddToExtraBalance(amount);
             var updateDefinition = Builders<Client>.Update.Set(c => c.ExtraBalance, client.ExtraBalance);
+            var extract = new Extract($"Valor de R${amount} adicionado ao Extra Balance do cliente com id: ${clientId}", amount, clientId);
+            await _extractService.CreateExtractAsync(extract);
             var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
             return result.ModifiedCount > 0;
         }
@@ -159,6 +186,8 @@ namespace DotnetBackend.Services
 
             client.WithdrawFromExtraBalance(amount);
 
+            var extract = new Extract($"Valor de R$${amount} retirado do Extra Balance do cliente com id: ${clientId}. CANCELAMENTO INDICAÇÃO", amount, clientId);
+            await _extractService.CreateExtractAsync(extract);
             var updateDefinition = Builders<Client>.Update.Set(c => c.ExtraBalance, client.ExtraBalance);
             var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
             return result.ModifiedCount > 0;
@@ -195,6 +224,8 @@ namespace DotnetBackend.Services
 
             var updateDefinition = Builders<Client>.Update;
             var updateFields = new List<UpdateDefinition<Client>>();
+
+            Console.WriteLine(updatedClient.Password);
 
             if (updatedClient.Name != currentClient.Name)
             {
@@ -260,10 +291,6 @@ namespace DotnetBackend.Services
             if (updatedClient.DateCreated != currentClient.DateCreated)
             {
                 updateFields.Add(updateDefinition.Set(c => c.DateCreated, updatedClient.DateCreated));
-            }
-            if (updatedClient.Password != currentClient.Password)
-            {
-                updateFields.Add(updateDefinition.Set(c => c.Password, updatedClient.Password));
             }
 
             if (updateFields.Count > 0)
@@ -372,5 +399,131 @@ namespace DotnetBackend.Services
             return result == PasswordVerificationResult.Success;
         }
 
+
+        public async Task<bool> UpdateClientName(string clientId, string newValue)
+        {
+            if (clientId == null)
+            {
+                throw new Exception("Id Nullo.");
+            }
+
+            var currentClient = await _clients.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+            if (currentClient == null)
+            {
+                throw new Exception("Cliente não encontrado.");
+            }
+
+            currentClient.Name = newValue;
+            var updateDefinition = Builders<Client>.Update.Set(c => c.Name, newValue);
+
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> UpdateClientEmail(string clientId, string newValue)
+        {
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("O ID do cliente não pode ser nulo ou vazio.");
+            }
+
+            var currentClient = await _clients.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+            if (currentClient == null)
+            {
+                throw new Exception("Cliente não encontrado.");
+            }
+
+            var responseIfExists = await _clients.Find(c => c.Email == newValue).FirstOrDefaultAsync();
+
+            if (responseIfExists != null)
+            {
+                throw new Exception("Email já existente.");
+            }
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.Email, newValue);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> UpdateClientClientProfit(string clientId, double newValue)
+        {
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("O ID do cliente não pode ser nulo ou vazio.");
+            }
+
+            var currentClient = await _clients.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+            if (currentClient == null)
+            {
+                throw new Exception("Cliente não encontrado.");
+            }
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.ClientProfit, newValue);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> UpdateClientAddress(string clientId, Address newAddress)
+        {
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("O ID do cliente não pode ser nulo ou vazio.");
+            }
+
+            var currentClient = await _clients.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+            if (currentClient == null)
+            {
+                throw new Exception("Cliente não encontrado.");
+            }
+
+            var updateDefinition = Builders<Client>.Update
+                .Set(c => c.Address.Street, newAddress.Street)
+                .Set(c => c.Address.Number, newAddress.Number)
+                .Set(c => c.Address.Zipcode, newAddress.Zipcode)
+                .Set(c => c.Address.Neighborhood, newAddress.Neighborhood)
+                .Set(c => c.Address.City, newAddress.City)
+                .Set(c => c.Address.State, newAddress.State)
+                .Set(c => c.Address.Country, newAddress.Country);
+
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> UpdateClientSponsorId(string clientId, string newValue)
+        {
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("O ID do cliente não pode ser nulo ou vazio.");
+            }
+
+            var currentClient = await _clients.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+            if (currentClient == null)
+            {
+                throw new Exception("Cliente não encontrado.");
+            }
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.SponsorId, newValue);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> UpdateClientPhone(string clientId, string newValue)
+        {
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("O ID do cliente não pode ser nulo ou vazio.");
+            }
+
+            var currentClient = await _clients.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+            if (currentClient == null)
+            {
+                throw new Exception("Cliente não encontrado.");
+            }
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.Phone, newValue);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
     }
 }

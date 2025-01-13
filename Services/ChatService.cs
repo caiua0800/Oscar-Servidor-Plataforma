@@ -56,7 +56,6 @@ namespace DotnetBackend.Services
             var updateDefinition = Builders<Chat>.Update.Set(c => c.Messages, chat.Messages);
             await _chats.UpdateOneAsync(c => c.ClientId == clientId, updateDefinition);
 
-            // Retorna o chat atualizado após a inserção da mensagem
             return chat;
         }
 
@@ -69,5 +68,6 @@ namespace DotnetBackend.Services
         {
             return await _chats.Find(c => c.ClientId == clientId).FirstOrDefaultAsync();
         }
+
     }
 }

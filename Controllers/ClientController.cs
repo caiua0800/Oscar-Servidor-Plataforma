@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using DotnetBackend.Queries;
 using System.Collections.Generic;
+using Microsoft.VisualBasic;
 
 namespace DotnetBackend.Controllers
 {
@@ -17,12 +18,13 @@ namespace DotnetBackend.Controllers
         private readonly PurchaseService _purchaseService;
         private readonly ExtractService _extractService;
         private readonly WithdrawalService _withdrawalService;
+        private readonly AuthService _authService;
         private readonly VendaService _vendaService;
         private readonly WebSocketHandler _webSocketHandler;
 
         public ClientController(ClientService clientService, ClientQueries clientQueries,
             PurchaseService purchaseService, ExtractService extractService,
-            VendaService vendaService, WithdrawalService withdrawalService, WebSocketHandler webSocketHandler)
+            VendaService vendaService, WithdrawalService withdrawalService, WebSocketHandler webSocketHandler, AuthService authService)
         {
             _clientService = clientService;
             _clientQueries = clientQueries;
@@ -31,6 +33,7 @@ namespace DotnetBackend.Controllers
             _vendaService = vendaService;
             _webSocketHandler = webSocketHandler;
             _withdrawalService = withdrawalService;
+            _authService = authService;
         }
 
         [HttpPost]
@@ -55,6 +58,12 @@ namespace DotnetBackend.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
             var clients = await _clientService.GetAllClientsAsync();
             return Ok(clients);
         }
@@ -63,6 +72,14 @@ namespace DotnetBackend.Controllers
         [Authorize(Roles = "Client")]
         public async Task<IActionResult> Delete(string id)
         {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
+
             var result = await _clientService.DeleteClientAsync(id);
             if (!result)
             {
@@ -74,7 +91,14 @@ namespace DotnetBackend.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> GetClientById(string id)
         {
-            Console.WriteLine($"Buscando cliente com CPF: '{id}'");
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
+            
             var client = await _clientService.GetClientByIdAsync(id);
             if (client == null)
             {
@@ -95,10 +119,16 @@ namespace DotnetBackend.Controllers
             var result = await _clientService.UpdateClientAsync(id, updatedClient);
             if (!result)
             {
-                return NotFound();
+                return NotFound($"Cliente com id '{id}' não encontrado.");
             }
 
-            return NoContent();
+            var client = await _clientService.GetClientByIdAsync(id);
+            if (client == null)
+            {
+                return NotFound($"Cliente com id '{id}' não encontrado após atualização.");
+            }
+
+            return Ok(client);
         }
 
         [HttpGet("details/{id}")]
@@ -258,6 +288,114 @@ namespace DotnetBackend.Controllers
             }
 
             return NoContent();
+        }
+
+        [HttpPut("{id}/email")]
+        public async Task<IActionResult> UpdateClientEmail(string id, [FromBody] string email)
+        {
+            if (string.IsNullOrEmpty(email))
+            {
+                return BadRequest("O Email não pode ser vazio.");
+            }
+
+            try
+            {
+                var result = await _clientService.UpdateClientEmail(id, email);
+                if (!result)
+                    return NotFound("O cliente não foi encontrado");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao atualizar o email: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}/phone/{newPhone}")]
+        public async Task<IActionResult> UpdateClientPhone(string id, string newPhone)
+        {
+            if (string.IsNullOrEmpty(newPhone))
+            {
+                return BadRequest("O telefone não pode ser vazio.");
+            }
+
+            try
+            {
+                var result = await _clientService.UpdateClientPhone(id, newPhone);
+                if (!result)
+                {
+                    return NotFound($"Cliente com ID '{id}' não encontrado.");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao atualizar o telefone: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}/sponsorId")]
+        public async Task<IActionResult> UpdateClientSponsorId(string id, [FromBody] string sponsorId)
+        {
+            if (string.IsNullOrEmpty(sponsorId))
+            {
+                return BadRequest("O SponsorId não pode ser vazio.");
+            }
+
+            try
+            {
+                var result = await _clientService.UpdateClientSponsorId(id, sponsorId);
+                if (!result)
+                {
+                    return NotFound($"Cliente com ID '{id}' não encontrado.");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao atualizar o SponsorId: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}/address")]
+        public async Task<IActionResult> UpdateClientAddress(string id, [FromBody] Address newAddress)
+        {
+            if (newAddress == null)
+            {
+                return BadRequest("O endereço não pode ser nulo.");
+            }
+
+            try
+            {
+                var result = await _clientService.UpdateClientAddress(id, newAddress);
+                if (!result)
+                {
+                    return NotFound($"Cliente com ID '{id}' não encontrado.");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao atualizar o endereço: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}/clientProfit")]
+        public async Task<IActionResult> UpdateClientClientProfit(string id, [FromBody] double clientProfit)
+        {
+            try
+            {
+                var result = await _clientService.UpdateClientClientProfit(id, clientProfit);
+                if (!result)
+                {
+                    return NotFound($"Cliente com ID '{id}' não encontrado.");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao atualizar o ClientProfit: {ex.Message}");
+            }
         }
 
     }

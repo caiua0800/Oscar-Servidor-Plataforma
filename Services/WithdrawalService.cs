@@ -13,8 +13,10 @@ public class WithdrawalService
     private readonly ClientService _clientService;
     private readonly PurchaseService _purchaseService;
     private readonly BankAccountService _bankAccountService;
+    private readonly SystemConfigService _systemConfigService;
     public WithdrawalService(MongoDbService mongoDbService, ClientService clientService,
-    CounterService counterService, ExtractService extractService, PurchaseService purchaseService, BankAccountService bankAccountService)
+    CounterService counterService, ExtractService extractService, PurchaseService purchaseService,
+     BankAccountService bankAccountService, SystemConfigService systemConfigService)
     {
         _withdrawals = mongoDbService.GetCollection<Withdrawal>("Withdrawal");
         _counterService = counterService;
@@ -22,10 +24,12 @@ public class WithdrawalService
         _clientService = clientService;
         _purchaseService = purchaseService;
         _bankAccountService = bankAccountService;
+        _systemConfigService = systemConfigService;
     }
 
     public async Task<Withdrawal> CreateWithdrawalAsync(Withdrawal withdrawal)
     {
+
         if (withdrawal.DateCreated == null)
         {
             TimeZoneInfo brasiliaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
@@ -66,16 +70,15 @@ public class WithdrawalService
         if (valorASerRetirado > 0)
         {
             List<Purchase> purchases = await _purchaseService.GetPurchasesByClientIdAsync(withdrawal.ClientId);
-
             foreach (Purchase purchase in purchases)
             {
                 if (valorASerRetirado > 0)
                 {
+                    Console.WriteLine($"Analisando contrato {purchase.PurchaseId} para realizar retirada");
                     if (purchase.Status == 2 || purchase.Status == 3)
                     {
                         DateTime dataLimite = DateTime.Now.AddDays(-90);
 
-                        // Verifique se FirstIncreasement não é nulo
                         if (purchase.FirstIncreasement.HasValue && purchase.FirstIncreasement < dataLimite)
                         {
                             if ((purchase.CurrentIncome - purchase.AmountWithdrawn) >= valorASerRetirado)
@@ -101,7 +104,7 @@ public class WithdrawalService
         var stringExtrato = "";
         foreach (string aiaiPapai in withdrawal.WithdrawnItems)
         {
-            stringExtrato += aiaiPapai + "-";  // Corrigido para adicionar corretamente cada item ao extrato
+            stringExtrato += aiaiPapai + "-";
         }
 
         var extract = new Extract($"Saque da Carteira, retirada de ${stringExtrato}", (decimal)withdrawal.AmountWithdrawn, withdrawal.ClientId);

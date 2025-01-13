@@ -29,7 +29,6 @@ public class ContractModel
     [BsonElement("description")]
     public string Description { get; set; }
 
-    // Construtor
     public ContractModel(string title, double value, string yearlyPlus, int duration, string description, double gain, int firstWithdraw)
     {
         Title = title;

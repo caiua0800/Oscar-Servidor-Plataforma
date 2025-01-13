@@ -25,6 +25,43 @@ public class SystemConfigService
         return await _systemConfigs.Find(_ => true).ToListAsync();
     }
 
+    public async Task DeleteSystemConfigByNameAsync(string name)
+    {
+        var normalizedName = name.Trim();
+        var configToDelete = await _systemConfigs.Find(p => p.Name == normalizedName).FirstOrDefaultAsync();
+
+        if (configToDelete != null)
+        {
+            await _systemConfigs.DeleteOneAsync(p => p.Name == normalizedName);
+        }
+    }
+    public async Task<SystemConfig?> EditSystemConfigByName(string name, string newValue)
+    {
+        var normalizedName = name.Trim();
+
+        var existingConfig = await _systemConfigs.Find(p => p.Name == normalizedName).FirstOrDefaultAsync();
+
+        if (existingConfig == null)
+        {
+            return null;
+        }
+
+        if (existingConfig.Value == newValue)
+            return null;
+
+        existingConfig.LastValue = existingConfig.Value;
+        existingConfig.Value = newValue;
+        existingConfig.LastUpdate = DateTime.UtcNow;
+
+        var updateDefinition = Builders<SystemConfig>.Update
+            .Set(config => config.Value, newValue)
+            .Set(config => config.LastValue, existingConfig.LastValue)
+            .Set(config => config.LastUpdate, existingConfig.LastUpdate);
+
+        await _systemConfigs.UpdateOneAsync(config => config.Name == normalizedName, updateDefinition);
+
+        return existingConfig;
+    }
 
     public async Task<SystemConfig?> GetSystemConfigByNameAsync(string name)
     {
