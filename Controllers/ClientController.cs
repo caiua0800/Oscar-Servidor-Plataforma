@@ -98,7 +98,7 @@ namespace DotnetBackend.Controllers
             {
                 return Forbid("Você não é ela");
             }
-            
+
             var client = await _clientService.GetClientByIdAsync(id);
             if (client == null)
             {
@@ -134,6 +134,14 @@ namespace DotnetBackend.Controllers
         [HttpGet("details/{id}")]
         public async Task<IActionResult> GetClientDetails(string id)
         {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfIsReallyTheClient(id, token))
+            {
+                return Forbid("Você não é ela");
+            }
+
             var client = await _clientService.GetClientByIdAsync(id);
             if (client == null)
             {
