@@ -41,7 +41,7 @@ namespace DotnetBackend.Controllers
             {
                 return Forbid("Você não é admin");
             }
-            
+
             var purchases = await _purchaseService.GetAllPurchasesAsync();
             return Ok(purchases);
         }
@@ -149,11 +149,19 @@ namespace DotnetBackend.Controllers
         [HttpPut("{id}/add/{amount}")]
         public async Task<IActionResult> AddIncrement(string id, decimal amount)
         {
+            var resultOne = await _purchaseService.GetPurchaseByIdAsync(id);
+            if (resultOne == null)
+            {
+                return NotFound();
+            }
+
             var authorizationHeader = HttpContext.Request.Headers["Authorization"];
             var token = authorizationHeader.ToString().Replace("Bearer ", "");
-            if (!_authService.VerifyIfAdminToken(token))
+
+            if (!_authService.VerifyIfIsReallyTheClient(resultOne.ClientId, token))
             {
-                return Forbid("Você não é admin");
+                Console.WriteLine(token);
+                return Forbid("Você não é nada");
             }
 
             var result = await _purchaseService.AddIncrementToPurchaseAsync(id, amount);
@@ -161,6 +169,7 @@ namespace DotnetBackend.Controllers
             {
                 return NotFound();
             }
+
             return NoContent();
         }
 
