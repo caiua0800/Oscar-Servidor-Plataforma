@@ -36,7 +36,7 @@ public class PasswordResetService
         var token = await GeneratePasswordResetToken(email);
         if (token == null) return;
 
-        var resetLink = $"https://localhost:3001/reset-password?token={token}";
+        var resetLink = $"https://clientesoscar.modelodesoftwae.com/reset-password?token={token}";
         var subject = "Redefinição de Senha";
         var plainTextContent = $"Clique aqui para redefinir sua senha: {resetLink}";
         var htmlContent = $"<strong>Clique aqui para redefinir sua senha:</strong> <a href='{resetLink}'>{resetLink}</a>";
