@@ -77,9 +77,15 @@ public class WithdrawalService
                     Console.WriteLine($"Analisando contrato {purchase.PurchaseId} para realizar retirada");
                     if (purchase.Status == 2 || purchase.Status == 3)
                     {
-                        DateTime dataLimite = DateTime.Now.AddDays(-90);
+                        int? diasPraSacar = purchase.DaysToFirstWithdraw;
+                        int diasPraSacarVal = 90;
+                        if (diasPraSacar != null)
+                        {
+                            diasPraSacarVal = (int)diasPraSacar;
+                        }
+                        DateTime dataLimite = DateTime.Now.AddDays(-diasPraSacarVal);
 
-                        if (purchase.FirstIncreasement.HasValue && purchase.FirstIncreasement < dataLimite)
+                        if ((purchase.FirstIncreasement.HasValue && purchase.FirstIncreasement < dataLimite) || (bool)purchase.FreeWithdraw)
                         {
                             if ((purchase.CurrentIncome - purchase.AmountWithdrawn) >= valorASerRetirado)
                             {
