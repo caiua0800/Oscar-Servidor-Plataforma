@@ -146,6 +146,26 @@ namespace DotnetBackend.Controllers
             return NoContent();
         }
 
+        [HttpPut("cancel-payment/{id}/{clientId}")]
+        public async Task<IActionResult> CancelPaymentContract(string id, string clientId)
+        {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+
+            if (!_authService.VerifyIfIsReallyTheClient(clientId, token))
+            {
+                return Forbid("Você não é ela");
+            }
+
+            var result = await _purchaseService.CancelPaymentContract(id);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
         [HttpPut("{id}/add/{amount}")]
         public async Task<IActionResult> AddIncrement(string id, decimal amount)
         {
