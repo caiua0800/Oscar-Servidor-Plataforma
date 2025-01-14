@@ -12,9 +12,12 @@ namespace DotnetBackend.Controllers
     public class ExtractController : ControllerBase
     {
         private readonly ExtractService _extractService;
-        public ExtractController(ExtractService extractService) 
+        private readonly AuthService _authService;
+
+        public ExtractController(ExtractService extractService, AuthService authService)
         {
             _extractService = extractService;
+            _authService = authService;
         }
 
         [HttpGet]
@@ -25,28 +28,35 @@ namespace DotnetBackend.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Client, Admin")]
+        // [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetExtractById(string id)
         {
-            var extract = await _extractService.GetExtractByIdAsync(id); 
+            var extract = await _extractService.GetExtractByIdAsync(id);
             if (extract == null)
             {
 
-                return NotFound(); 
+                return NotFound();
             }
             return Ok(extract);
         }
 
         [HttpGet("client/{id}")]
-        [Authorize(Roles = "Client, Admin")]
+        // [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetExtractsByClientId(string id)
         {
-            var extracts = await _extractService.GetExtractsByClientIdAsync(id); 
-            if (extracts == null || extracts.Count == 0) 
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
             {
-                return NotFound(); 
+                return Forbid("Você não é ela");
             }
-            return Ok(extracts); 
+
+            var extracts = await _extractService.GetExtractsByClientIdAsync(id);
+            if (extracts == null || extracts.Count == 0)
+            {
+                return NotFound();
+            }
+            return Ok(extracts);
         }
 
         [HttpDelete("{id}")]
@@ -55,7 +65,7 @@ namespace DotnetBackend.Controllers
             var result = await _extractService.DeleteExtractAsync(id);
             if (!result)
             {
-                return NotFound(); 
+                return NotFound();
             }
             return NoContent();
         }
