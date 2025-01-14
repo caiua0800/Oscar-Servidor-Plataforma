@@ -63,6 +63,8 @@ namespace DotnetBackend.Models
 
         [BsonElement("firstIncreasement")]
         public DateTime? FirstIncreasement { get; set; }
+        [BsonElement("daysToFirstWithdraw")]
+        public int? DaysToFirstWithdraw { get; set; }
 
         [BsonElement("description")]
         public string Description { get; set; } = "";

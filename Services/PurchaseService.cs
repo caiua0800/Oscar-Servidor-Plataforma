@@ -74,6 +74,7 @@ namespace DotnetBackend.Services
             purchase.TotalPrice = (purchase.Quantity * value);
             purchase.AmountPaid = (purchase.Quantity * value) - ((purchase.Quantity * value) * purchase.Discount);
             purchase.FinalIncome = purchase.Quantity * value * (decimal)gain;
+            purchase.DaysToFirstWithdraw = purchase.DaysToFirstWithdraw;
             purchase.CurrentIncome = 0;
             purchase.AmountWithdrawn = 0;
             purchase.UnityPrice = value;
