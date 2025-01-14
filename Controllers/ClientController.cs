@@ -169,10 +169,9 @@ namespace DotnetBackend.Controllers
                             daysToWithdraw = (int)daysToWithdrawDB;
                         }
 
-                        if (purchase.FirstIncreasement.HasValue &&
-                            (DateTime.UtcNow - purchase.FirstIncreasement.Value).TotalDays >= daysToWithdraw)
+                        if ((purchase.FirstIncreasement.HasValue && (DateTime.UtcNow - purchase.FirstIncreasement.Value).TotalDays >= daysToWithdraw) || purchase.FreeWithdraw == true)
                         {
-                            amountAvailableToWithdraw += (purchase.CurrentIncome - purchase.AmountWithdrawn);
+                            amountAvailableToWithdraw += purchase.CurrentIncome - purchase.AmountWithdrawn;
                         }
 
                         if (purchase.Status == 1 || purchase.Status == 2)
