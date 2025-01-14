@@ -206,6 +206,29 @@ namespace DotnetBackend.Controllers
             return NoContent();
         }
 
+        [HttpPut("{id}/free-withdraw/{newStatus}")]
+        public async Task<IActionResult> FreeWithdraw(string id, string newStatus)
+        {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é admin");
+            }
+
+            bool status = newStatus == "true";
+
+            var result = await _purchaseService.FreeWithdrawStatus(id, status);
+
+            if (!result)
+            {
+                return NotFound();
+            }
+
+            return NoContent();
+        }
+
         [HttpGet("last")]
         public async Task<IActionResult> GetLast50Extracts()
         {

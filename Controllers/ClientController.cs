@@ -162,12 +162,20 @@ namespace DotnetBackend.Controllers
                     {
                         purchaseDetails.Add(purchase);
 
+                        int? daysToWithdrawDB = purchase.DaysToFirstWithdraw;
+                        int daysToWithdraw = 90;
+                        if (daysToWithdrawDB != null)
+                        {
+                            daysToWithdraw = (int)daysToWithdrawDB;
+                        }
+
                         if (purchase.FirstIncreasement.HasValue &&
-                            (DateTime.UtcNow - purchase.FirstIncreasement.Value).TotalDays >= 90)
+                            (DateTime.UtcNow - purchase.FirstIncreasement.Value).TotalDays >= daysToWithdraw)
                         {
                             amountAvailableToWithdraw += (purchase.CurrentIncome - purchase.AmountWithdrawn);
                         }
-                        else if (purchase.Status == 1 || purchase.Status == 2)
+
+                        if (purchase.Status == 1 || purchase.Status == 2)
                         {
                             amountTotalAvaliableFromContracts += (purchase.CurrentIncome - purchase.AmountWithdrawn);
                         }

@@ -83,6 +83,8 @@ namespace DotnetBackend.Models
 
         [BsonElement("qrCodeBase64")]
         public string? QrCodeBase64 { get; set; } = "";
+        [BsonElement("freeWithdraw")]
+        public bool? FreeWithdraw { get; set; } = false;
 
         public Purchase() { }
 

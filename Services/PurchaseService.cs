@@ -478,6 +478,28 @@ namespace DotnetBackend.Services
             }
         }
 
+        public async Task<bool> FreeWithdrawStatus(string purchaseId, bool newStatus)
+        {
+            var existingPurchase = await GetPurchaseByIdAsync(purchaseId);
+
+            if (existingPurchase != null)
+            {
+                existingPurchase.FreeWithdraw = newStatus;
+
+                var updateDefinition = Builders<Purchase>.Update.Set(p => p.FreeWithdraw, newStatus);
+                await _purchases.UpdateOneAsync(p => p.PurchaseId == purchaseId, updateDefinition);
+
+                Console.WriteLine($"Contrato encontrado: {existingPurchase.PurchaseId}, free Withdraw {newStatus}");
+
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"Erro ao encontrar contrato {purchaseId}");
+                return false;
+            }
+        }
+
         public async Task<bool> CancelPurchase(string purchaseId)
         {
             Purchase existingPurchase = await GetPurchaseByIdAsync(purchaseId);
