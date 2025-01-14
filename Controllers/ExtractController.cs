@@ -46,7 +46,7 @@ namespace DotnetBackend.Controllers
         {
             var authorizationHeader = HttpContext.Request.Headers["Authorization"];
             var token = authorizationHeader.ToString().Replace("Bearer ", "");
-            if (!_authService.VerifyIfAdminToken(token))
+            if (!_authService.VerifyIfIsReallyTheClient(id, token))
             {
                 return Forbid("Você não é ela");
             }
