@@ -13,11 +13,14 @@ public class IndicationController : ControllerBase
 {
     private readonly IndicationService _indicationService;
     private readonly ClientService _clientService;
+    private readonly AuthService _authService;
 
-    public IndicationController(IndicationService indicationService, ClientService clientService)
+
+    public IndicationController(IndicationService indicationService, ClientService clientService, AuthService authService)
     {
         _indicationService = indicationService;
         _clientService = clientService;
+        _authService = authService;
     }
 
     [HttpPost]
@@ -28,10 +31,18 @@ public class IndicationController : ControllerBase
             return BadRequest("Indicação não pode ser nula.");
         }
 
+        var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+        var token = authorizationHeader.ToString().Replace("Bearer ", "");
+        if (!_authService.VerifyIfAdminToken(token))
+        {
+            return Forbid("Você não é ela");
+        }
+
+
         var createdIndication = await _indicationService.CreateIndicationAsync(indication);
         await _clientService.AddToExtraBalanceAsync(indication.ClientId, (decimal)indication.Value);
 
-        return CreatedAtAction(nameof(GetIndicationById), new { id = createdIndication.Id }, createdIndication); 
+        return CreatedAtAction(nameof(GetIndicationById), new { id = createdIndication.Id }, createdIndication);
     }
 
     [HttpGet("{id}")]
@@ -48,7 +59,32 @@ public class IndicationController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllIndications()
     {
+
+        var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+        var token = authorizationHeader.ToString().Replace("Bearer ", "");
+        if (!_authService.VerifyIfAdminToken(token))
+        {
+            return Forbid("Você não é ela");
+        }
+
         var indications = await _indicationService.GetAllIndicationsAsync();
+        return Ok(indications);
+    }
+
+    [HttpGet("client/{clientId}")]
+    public async Task<IActionResult> GetAllIndicationsByClient(string clientId)
+    {
+        if(clientId == null)
+            return BadRequest("Envie o Client Id");
+
+        var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+        var token = authorizationHeader.ToString().Replace("Bearer ", "");
+        if (!_authService.VerifyIfIsReallyTheClient(clientId, token))
+        {
+            return Forbid("Você não é ela");
+        }
+
+        var indications = await _indicationService.GetIndicationsByClientIdAsync(clientId);
         return Ok(indications);
     }
 

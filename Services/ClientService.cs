@@ -46,13 +46,20 @@ namespace DotnetBackend.Services
             Console.WriteLine($"Data de Criação antes da inserção: {client.DateCreated}");
             await _clients.InsertOneAsync(client);
 
-            await _emailService.SendEmailAsync(
-                client.Email,
-                "Cadastro realizado com sucesso",
-                "Obrigado por se cadastrar!",
-                "<strong>Obrigado por se cadastrar!</strong>"
-            );
-            return client;
+            try
+            {
+                await _emailService.SendEmailAsync(
+                    client.Email,
+                    "Cadastro realizado com sucesso",
+                    "Obrigado por se cadastrar!",
+                    "<strong>Obrigado por se cadastrar!</strong>"
+                );
+                return client;
+            }
+            catch (System.Exception)
+            {
+                return client;
+            }
         }
 
         public async Task<List<Client>> GetAllClientsAsync()
@@ -442,6 +449,24 @@ namespace DotnetBackend.Services
             }
 
             var updateDefinition = Builders<Client>.Update.Set(c => c.Email, newValue);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> UpdateClientSponsor(string clientId, string newValue)
+        {
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("O ID do cliente não pode ser nulo ou vazio.");
+            }
+
+            var currentClient = await _clients.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+            if (currentClient == null)
+            {
+                throw new Exception("Cliente não encontrado.");
+            }
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.SponsorId, newValue);
             var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
             return result.ModifiedCount > 0;
         }

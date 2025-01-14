@@ -55,6 +55,10 @@ public class IndicationService
     {
         return await _indications.Find(c => c.Id == id).FirstOrDefaultAsync();
     }
+    public async Task<List<Indication>> GetIndicationsByClientIdAsync(string id)
+    {
+        return await _indications.Find(c => c.ClientId == id).ToListAsync();
+    }
 
     public async Task<List<Indication>> GetAllIndicationsAsync()
     {

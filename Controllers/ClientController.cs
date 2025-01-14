@@ -319,6 +319,34 @@ namespace DotnetBackend.Controllers
             }
         }
 
+        [HttpPut("{id}/sponsor/{newSponsor}")]
+        public async Task<IActionResult> UpdateClientSponsor(string id, string newSponsor)
+        {
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
+
+            if (string.IsNullOrEmpty(newSponsor))
+            {
+                return BadRequest("O Sponsor não pode ser vazio.");
+            }
+
+            try
+            {
+                var result = await _clientService.UpdateClientSponsor(id, newSponsor);
+                if (!result)
+                    return NotFound("O cliente não foi encontrado");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao atualizar o sponsor: {ex.Message}");
+            }
+        }
+
         [HttpPut("{id}/phone/{newPhone}")]
         public async Task<IActionResult> UpdateClientPhone(string id, string newPhone)
         {
