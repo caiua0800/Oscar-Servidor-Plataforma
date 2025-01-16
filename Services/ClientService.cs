@@ -140,6 +140,7 @@ namespace DotnetBackend.Services
         {
             var client = await GetClientByIdAsync(clientId);
 
+
             if (client == null)
             {
                 throw new InvalidOperationException("Cliente não encontrado.");

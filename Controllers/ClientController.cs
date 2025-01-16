@@ -278,6 +278,14 @@ namespace DotnetBackend.Controllers
         [HttpPut("{id}/exclude")]
         public async Task<IActionResult> ExcludeAccount(string id)
         {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfIsReallyTheClient(id, token))
+            {
+                return Forbid("Você não é ela");
+            }
+
             if (string.IsNullOrEmpty(id))
             {
                 return BadRequest("ID do cliente inexistente.");
@@ -285,15 +293,13 @@ namespace DotnetBackend.Controllers
 
             var purchases = await _purchaseService.GetPurchasesByClientIdAsync(id);
 
-            if (purchases == null || !purchases.Any())
+            if (purchases != null && purchases.Count > 0)
             {
-                return NotFound("Nenhuma compra encontrada para este cliente.");
-            }
-
-            foreach (var purchase in purchases)
-            {
-                purchase.Status = 4;
-                await _purchaseService.UpdatePurchaseAsync(purchase.PurchaseId, purchase);
+                foreach (var purchase in purchases)
+                {
+                    purchase.Status = 4;
+                    await _purchaseService.UpdatePurchaseAsync(purchase.PurchaseId, purchase);
+                }
             }
 
             var result = await _clientService.ExcludeAccount(id);
@@ -323,6 +329,35 @@ namespace DotnetBackend.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Erro ao atualizar o email: {ex.Message}");
+            }
+        }
+
+        [HttpPost("{id}/add/{amount}")]
+        public async Task<IActionResult> AddMoney(string id, decimal amount)
+        {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
+
+            if (amount <= 0 || string.IsNullOrEmpty(id))
+            {
+                return BadRequest("O Amount e o Id não pode ser vazio.");
+            }
+
+            try
+            {
+                var result = await _clientService.AddToExtraBalanceAsync(id, amount);
+                if (!result)
+                    return NotFound("O cliente não foi encontrado");
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao adicionar saldo: {ex.Message}");
             }
         }
 
