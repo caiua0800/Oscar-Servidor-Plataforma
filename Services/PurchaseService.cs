@@ -132,14 +132,20 @@ namespace DotnetBackend.Services
             return purchase;
         }
 
-        private DateTime GetEndContractDate(int duration)
-        {
-            return DateTime.UtcNow.AddMonths(duration);
-        }
-
         public async Task<List<Purchase>> GetAllPurchasesAsync()
         {
             return await _purchases.Find(_ => true).ToListAsync();
+        }
+
+        public async Task<List<Purchase>> GetAllPurchasesFilteredAsync(int dateFilter)
+        {
+            if (dateFilter < 0)
+            {
+                throw new ArgumentException("O filtro de data deve ser um número positivo representando a quantidade de dias.");
+            }
+            var cutoffDate = DateTime.UtcNow.AddDays(-dateFilter);
+
+            return await _purchases.Find(purchase => purchase.PurchaseDate >= cutoffDate).ToListAsync();
         }
 
         public async Task<List<Purchase>> GetLast50PurchasesAsync()

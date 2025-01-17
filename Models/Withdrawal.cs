@@ -18,6 +18,9 @@ namespace DotnetBackend.Models
         [BsonElement("amountWithdrawn")]
         public required double AmountWithdrawn { get; set; }
 
+        [BsonElement("amountWithdrawnReceivable")]
+        public double? AmountWithdrawnReceivable { get; set; }
+
         [BsonElement("withdrawnItems")]
         public List<string>? WithdrawnItems { get; set; }
 

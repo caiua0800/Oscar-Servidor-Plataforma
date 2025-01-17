@@ -39,6 +39,7 @@ public class WithdrawalService
         }
 
         withdrawal.WithdrawalId = "W" + await _counterService.GetNextSequenceAsync("withdraw");
+        withdrawal.AmountWithdrawnReceivable = withdrawal.AmountWithdrawn - (withdrawal.AmountWithdrawn*0.04);
 
         Client? client = await _clientService.GetClientByIdAsync(withdrawal.ClientId);
 
@@ -130,6 +131,17 @@ public class WithdrawalService
     public async Task<List<Withdrawal>> GetAllWithdrawalsAsync()
     {
         return await _withdrawals.Find(_ => true).ToListAsync(); // Retorna todos os saques
+    }
+
+    public async Task<List<Withdrawal>> GetAllWithdrawalsFilteredAsync(int dateFilter)
+    {
+        if (dateFilter < 0)
+        {
+            throw new ArgumentException("O filtro de data deve ser um número positivo representando a quantidade de dias.");
+        }
+        var cutoffDate = DateTime.UtcNow.AddDays(-dateFilter);
+
+        return await _withdrawals.Find(wi => wi.DateCreated >= cutoffDate).ToListAsync();
     }
 
     public async Task<List<Withdrawal>> GetAllWithdrawsToPay()

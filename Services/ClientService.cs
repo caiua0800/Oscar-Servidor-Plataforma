@@ -67,6 +67,18 @@ namespace DotnetBackend.Services
             return await _clients.Find(_ => true).ToListAsync();
         }
 
+        public async Task<List<Client>> GetAllClientsWithCreationDateFilterAsync(int dateFilter)
+        {
+            if (dateFilter < 0)
+            {
+                throw new ArgumentException("O filtro de data deve ser um número positivo representando a quantidade de dias.");
+            }
+
+            var cutoffDate = DateTime.UtcNow.AddDays(-dateFilter);
+
+            return await _clients.Find(client => client.DateCreated >= cutoffDate).ToListAsync();
+        }
+
         public async Task<bool> DeleteClientAsync(string id)
         {
             var deleteResult = await _clients.DeleteOneAsync(c => c.Id == id);
