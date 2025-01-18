@@ -22,6 +22,9 @@ namespace DotnetBackend.Models
         [BsonElement("sponsorId")]
         public string? SponsorId { get; set; }
 
+        [BsonElement("consultorId")]
+        public string? ConsultorId { get; set; }
+
         [BsonElement("address")]
         public required Address Address { get; set; }
 

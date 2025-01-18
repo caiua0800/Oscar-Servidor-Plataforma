@@ -67,6 +67,11 @@ namespace DotnetBackend.Services
             return await _clients.Find(_ => true).ToListAsync();
         }
 
+        public async Task<List<Client>> GetAllClientsByConsultorIdAsync(string consultorId)
+        {
+            return await _clients.Find(client => client.ConsultorId == consultorId).ToListAsync();
+        }
+
         public async Task<List<Client>> GetAllClientsWithCreationDateFilterAsync(int dateFilter)
         {
             if (dateFilter < 0)
@@ -77,6 +82,18 @@ namespace DotnetBackend.Services
             var cutoffDate = DateTime.UtcNow.AddDays(-dateFilter);
 
             return await _clients.Find(client => client.DateCreated >= cutoffDate).ToListAsync();
+        }
+
+        public async Task<List<Client>> GetAllClientsWithCreationDateAndConsultorFilterAsync(int dateFilter, string consultorId)
+        {
+            if (dateFilter < 0)
+            {
+                throw new ArgumentException("O filtro de data deve ser um número positivo representando a quantidade de dias.");
+            }
+
+            var cutoffDate = DateTime.UtcNow.AddDays(-dateFilter);
+
+            return await _clients.Find(client => client.DateCreated >= cutoffDate && client.ConsultorId == consultorId).ToListAsync();
         }
 
         public async Task<bool> DeleteClientAsync(string id)
@@ -462,6 +479,24 @@ namespace DotnetBackend.Services
             }
 
             var updateDefinition = Builders<Client>.Update.Set(c => c.Email, newValue);
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
+        public async Task<bool> UpdateClientConsultor(string clientId, string newValue)
+        {
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentException("O ID do cliente não pode ser nulo ou vazio.");
+            }
+
+            var currentClient = await _clients.Find(c => c.Id == clientId).FirstOrDefaultAsync();
+            if (currentClient == null)
+            {
+                throw new Exception("Cliente não encontrado.");
+            }
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.ConsultorId, newValue);
             var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
             return result.ModifiedCount > 0;
         }

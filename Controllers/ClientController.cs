@@ -68,6 +68,19 @@ namespace DotnetBackend.Controllers
             return Ok(clients);
         }
 
+        [HttpGet("consultor/{consultorId}")]
+        public async Task<IActionResult> GetAllByConsultorId(string consultorId)
+        {
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
+            var clients = await _clientService.GetAllClientsByConsultorIdAsync(consultorId);
+            return Ok(clients);
+        }
+
         [HttpDelete("{id}")]
         [Authorize(Roles = "Client")]
         public async Task<IActionResult> Delete(string id)
@@ -409,6 +422,29 @@ namespace DotnetBackend.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, $"Erro ao atualizar o telefone: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}/consultor/{newPhone}")]
+        public async Task<IActionResult> UpdateClientConsultor(string id, string newPhone)
+        {
+            if (string.IsNullOrEmpty(newPhone))
+            {
+                return BadRequest("O telefone não pode ser vazio.");
+            }
+
+            try
+            {
+                var result = await _clientService.UpdateClientConsultor(id, newPhone);
+                if (!result)
+                {
+                    return NotFound($"Cliente com ID '{id}' não encontrado.");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Erro ao atualizar o consultor: {ex.Message}");
             }
         }
 

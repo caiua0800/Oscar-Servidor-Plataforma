@@ -64,6 +64,50 @@ namespace DotnetBackend.Services
             }
         }
 
+        public async Task<MemoryStream> GenerateConsultorReportPdfAsync(List<Consultor> consultores)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                using (var pdfWriter = new PdfWriter(memoryStream))
+                {
+                    using (var pdf = new PdfDocument(pdfWriter))
+                    {
+                        var document = new Document(pdf);
+
+                        var boldFont = PdfFontFactory.CreateFont(StandardFonts.HELVETICA_BOLD);
+
+                        document.Add(new Paragraph("Relatório de Consultores")
+                            .SetFont(boldFont)
+                            .SetFontSize(20)
+                            .SetTextAlignment(iText.Layout.Properties.TextAlignment.CENTER)); // Centraliza o título
+
+                        var table = new Table(new float[] { 3, 3, 3, 3, 3 })
+                            .SetWidth(UnitValue.CreatePercentValue(100)); // Define a largura da tabela para 100%
+
+                        table.AddHeaderCell("Nome");
+                        table.AddHeaderCell("ID");
+                        table.AddHeaderCell("Data de Cadastro");
+                        table.AddHeaderCell("Telefone");
+                        table.AddHeaderCell("Quantidade Clientes");
+
+                        foreach (var consultor in consultores)
+                        {
+                            table.AddCell(consultor.Name);
+                            table.AddCell(consultor.Id);
+                            table.AddCell(consultor.DateCreated.ToString("dd/MM/yyyy"));
+                            table.AddCell(consultor.Phone);
+                            table.AddCell(consultor.ClientsQtt?.ToString() ?? "0"); // Valor padrão se null
+                        }
+
+                        document.Add(table);
+                        document.Close();
+                    }
+                }
+
+                return memoryStream;
+            }
+        }
+
         public async Task<MemoryStream> GeneratePurchaseReportPdfAsync(List<Purchase> purchases)
         {
             using (var memoryStream = new MemoryStream())
