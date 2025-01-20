@@ -174,10 +174,10 @@ public class WithdrawalService
         {
             try
             {
-                if (newStatus == 2)
-                {
-                    await _bankAccountService.WithdrawFromBalanceAsync(withdrawalId, (decimal)existingWithdrawal.AmountWithdrawn);
-                }
+                // if (newStatus == 2)
+                // {
+                //     await _bankAccountService.WithdrawFromBalanceAsync(withdrawalId, (decimal)existingWithdrawal.AmountWithdrawn);
+                // }
 
                 if (newStatus == 3)
                 {
