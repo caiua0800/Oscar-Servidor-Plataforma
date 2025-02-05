@@ -44,7 +44,7 @@ namespace DotnetBackend.Controllers
             }
 
             var createdVenda = await _buySolicitationService.CreatePix(vendaId, buyerId);
-            return CreatedAtAction(nameof(GetBuySolicitationById), new { id = createdVenda.Id }, createdVenda);
+            return Ok(createdVenda);
         }
 
         [HttpGet]

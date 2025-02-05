@@ -168,9 +168,8 @@ public class BuySolicitationService
         }
         catch (Exception ex)
         {
-            // Log do erro (pode ser usando um serviço de logging como Serilog, NLog, etc.)
             Console.WriteLine($"Erro ao gerar PIX: {ex.Message}");
-            return null; // Ou retorne uma instância de BuySolicitation com os dados disponíveis
+            return null; 
         }
     }
 
