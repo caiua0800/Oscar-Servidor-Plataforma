@@ -43,8 +43,19 @@ public class WithdrawalController : ControllerBase
         SystemConfig daysToWithdraw = await _systemConfigService.GetSystemConfigByNameAsync("withdrawn_date_days");
         SystemConfig monthsToWithdraw = await _systemConfigService.GetSystemConfigByNameAsync("withdrawn_date_months");
 
-        var arrayDeDiasParaSaque = daysToWithdraw.Value.Split("-").Select(int.Parse).Distinct().ToArray();
-        var arrayDeMesesParaSaque = monthsToWithdraw.Value.Split("-").Select(int.Parse).Distinct().ToArray();
+        int[] arrayDeDiasParaSaque; // Declaração correta do tipo int[]
+        int[] arrayDeMesesParaSaque; // Declaração correta do tipo int[]
+
+        if (daysToWithdraw != null && daysToWithdraw.Value != null && monthsToWithdraw != null && monthsToWithdraw.Value != null)
+        {
+            arrayDeDiasParaSaque = daysToWithdraw.Value.Split("-").Select(int.Parse).Distinct().ToArray();
+            arrayDeMesesParaSaque = monthsToWithdraw.Value.Split("-").Select(int.Parse).Distinct().ToArray();
+        }
+        else
+        {
+            arrayDeDiasParaSaque = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29 };
+            arrayDeMesesParaSaque = new int[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
+        }
 
         var timeZone = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
         var currentDateTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZone);
