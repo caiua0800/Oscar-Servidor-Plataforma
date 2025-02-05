@@ -80,7 +80,8 @@ public class SystemConfigController : ControllerBase
 
         if (updatedConfig == null)
         {
-            return NotFound("Configuração não encontrada.");
+            return Ok(await _systemConfigService.CreateSystemConfigAsync( new SystemConfig(name, newValue)));
+            // return NotFound("Configuração não encontrada.");
         }
 
         return Ok(updatedConfig);

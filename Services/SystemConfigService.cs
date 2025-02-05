@@ -44,10 +44,10 @@ public class SystemConfigService
         if (existingConfig == null)
         {
             return null;
+        }else{
+            SystemConfig? created = await CreateSystemConfigAsync(new SystemConfig(name, newValue));
+            existingConfig = created;
         }
-
-        if (existingConfig.Value == newValue)
-            return null;
 
         existingConfig.LastValue = existingConfig.Value;
         existingConfig.Value = newValue;
