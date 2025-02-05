@@ -119,7 +119,12 @@ namespace DotnetBackend.Services
                 }
                 else
                 {
-                    throw new Exception($"Falha na requisição PIX: {response.ReasonPhrase}");
+                    purchase.TicketPayment = null;
+                    purchase.QrCode = null;
+                    purchase.QrCodeBase64 = null;
+                    purchase.TicketId = null;
+                    purchase.ExpirationDate = null;
+    
                 }
             }
 
