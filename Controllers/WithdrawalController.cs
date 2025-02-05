@@ -25,6 +25,7 @@ public class WithdrawalController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] Withdrawal withdrawal)
     {
+
         if (withdrawal == null)
         {
             return BadRequest("Withdraw is null.");
@@ -38,7 +39,6 @@ public class WithdrawalController : ControllerBase
         {
             token = authorizationHeader.ToString().Replace("Bearer ", "");
         }
-
 
         SystemConfig daysToWithdraw = await _systemConfigService.GetSystemConfigByNameAsync("withdrawn_date_days");
         SystemConfig monthsToWithdraw = await _systemConfigService.GetSystemConfigByNameAsync("withdrawn_date_months");
@@ -54,7 +54,7 @@ public class WithdrawalController : ControllerBase
 
         var verificacaoDeToken = _authService.VerifyToken(token);
 
-        if (!arrayDeDiasParaSaque.Contains(todayDay) || !arrayDeMesesParaSaque.Contains(todayMonth) && verificacaoDeToken != "Admin")
+        if ((!arrayDeDiasParaSaque.Contains(todayDay) || !arrayDeMesesParaSaque.Contains(todayMonth)) && verificacaoDeToken != "Admin")
         {
             throw new InvalidOperationException($"Hoje não é um dia permitido para saque. {token}");
         }
@@ -68,7 +68,7 @@ public class WithdrawalController : ControllerBase
         if (verificacaoDeToken == "Admin")
             Console.WriteLine("Saque permitido somente por ser admin.");
 
-        var createdWithdrawal = await _withdrawalService.CreateWithdrawalAsync(withdrawal);
+        var createdWithdrawal = await _withdrawalService.CreateWithdrawalAsync(withdrawal, verificacaoDeToken == "Admin");
 
         if (string.IsNullOrEmpty(createdWithdrawal.WithdrawalId))
         {

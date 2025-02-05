@@ -27,7 +27,7 @@ public class WithdrawalService
         _systemConfigService = systemConfigService;
     }
 
-    public async Task<Withdrawal> CreateWithdrawalAsync(Withdrawal withdrawal)
+     public async Task<Withdrawal> CreateWithdrawalAsync(Withdrawal withdrawal, bool isAdmin)
     {
 
         if (withdrawal.DateCreated == null)
@@ -60,8 +60,8 @@ public class WithdrawalService
             await _clientService.WithdrawFromExtraBalanceAsync(withdrawal.ClientId, valorASerRetirado);
             withdrawal.WithdrawnItems.Add("Extra Balance");
             valorASerRetirado = 0;
-        }
-        else if (client.ExtraBalance > 0)
+
+        }else if (client.ExtraBalance > 0)
         {
             valorASerRetirado -= (decimal)client.ExtraBalance;
             await _clientService.WithdrawFromExtraBalanceAsync(withdrawal.ClientId, (decimal)client.ExtraBalance);
@@ -86,7 +86,7 @@ public class WithdrawalService
                         }
                         DateTime dataLimite = DateTime.Now.AddDays(-diasPraSacarVal);
 
-                        if ((purchase.FirstIncreasement.HasValue && purchase.FirstIncreasement < dataLimite) || (bool)purchase.FreeWithdraw)
+                        if ((purchase.FirstIncreasement.HasValue && purchase.FirstIncreasement < dataLimite) || (bool)purchase.FreeWithdraw || isAdmin)
                         {
                             if ((purchase.CurrentIncome - purchase.AmountWithdrawn) >= valorASerRetirado)
                             {
@@ -114,7 +114,7 @@ public class WithdrawalService
             stringExtrato += aiaiPapai + "-";
         }
 
-        var extract = new Extract($"Saque da Carteira, retirada de ${stringExtrato}", (decimal)withdrawal.AmountWithdrawn, withdrawal.ClientId);
+        var extract = new Extract($"Saque da Carteira, retirada de {stringExtrato}", (decimal)withdrawal.AmountWithdrawn, withdrawal.ClientId);
         await _extractService.CreateExtractAsync(extract);
         await _clientService.AddWithdrawalAsync(withdrawal.ClientId, withdrawal.WithdrawalId);
         await _withdrawals.InsertOneAsync(withdrawal);
