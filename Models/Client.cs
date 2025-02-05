@@ -152,6 +152,7 @@ namespace DotnetBackend.Models
             }
             if (amount > BlockedBalance)
             {
+                Console.WriteLine($"Tentando Sacar R${amount} de R${BlockedBalance}");
                 throw new InvalidOperationException("Saldo insuficiente para realizar o saque.");
             }
             BlockedBalance -= amount;

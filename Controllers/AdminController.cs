@@ -11,10 +11,15 @@ namespace DotnetBackend.Controllers
     {
         private readonly AdminService _adminService;
         private readonly WithdrawalService _withdrawalService;
+        private readonly AuthService _authService;
+        private readonly ConnectionIpService _connectionIpService;
 
-        public AdminController(AdminService adminService)
+
+        public AdminController(AdminService adminService, AuthService authService, ConnectionIpService connectionIpService)
         {
             _adminService = adminService;
+            _authService = authService;
+            _connectionIpService = connectionIpService;
         }
 
         [HttpPost]
@@ -27,6 +32,18 @@ namespace DotnetBackend.Controllers
 
             var createdAdmin = await _adminService.CreateAdminAsync(admin, admin.Password);
             return CreatedAtAction(nameof(CreateAdmin), new { id = createdAdmin.Id }, createdAdmin);
+        }
+
+        [HttpPut("{id}/permissions/{newPermission}")]
+        public async Task<IActionResult> UpdateAdminPermissions(string id, string newPermission)
+        {
+            if (newPermission == null || string.IsNullOrEmpty(newPermission))
+            {
+                return BadRequest("As permissões de admin é nula.");
+            }
+
+            var createdAdmin = await _adminService.ChangePermissions(id, newPermission);
+            return createdAdmin ? Ok("Permissões Editadas Com Sucesso.") : BadRequest("Não foi possível editar");
         }
 
         [HttpGet]
@@ -42,6 +59,16 @@ namespace DotnetBackend.Controllers
             return Ok(admins);
         }
 
+        [HttpGet("weekly-views")]
+        public async Task<IActionResult> GetLastWeekAccess()
+        {
+            var access = await _connectionIpService.CountTotalAccessesLastWeekAsync();
+            if(access == 0)
+            {
+                return Ok("Sem Dados.");
+            }
+            return Ok(access);
+        }
 
         [HttpGet("{id}")]
         [Authorize(Roles = "Admin")]
@@ -57,6 +84,42 @@ namespace DotnetBackend.Controllers
             return Ok(admin); // Retorna o admin encontrado
         }
 
+        [HttpGet("details")]
+        public async Task<IActionResult> GetAdminDetailsById()
+        {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
+
+            var admin = await _authService.GetAdminByToken(token);
+
+            if (admin == null)
+            {
+                Console.WriteLine($"Admin com Id '{admin.Id}' não encontrado.");
+                return NotFound();
+            }
+
+
+            if (admin.PermissionLevel.Contains("All"))
+            {
+                admin.Permission = "Superior";
+                Console.WriteLine($"HIHI: AdminPermissions {admin.PermissionLevel}");
+            }
+            else if (admin.PermissionLevel.Contains("Contrato, Saque"))
+            {
+                admin.Permission = "Intermediário";
+            }
+            else
+            {
+                admin.Permission = "Baixo";
+            }
+
+            return Ok(admin);
+        }
 
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")]

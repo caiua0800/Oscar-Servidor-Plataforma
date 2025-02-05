@@ -13,6 +13,9 @@ namespace DotnetBackend.Models
         [BsonElement("clientId")]
         public required string ClientId { get; set; }
 
+        [BsonElement("clientName")]
+        public string? ClientName { get; set; }
+
         [BsonElement("productName")]
         public string? ProductName { get; set; }
 
@@ -47,7 +50,10 @@ namespace DotnetBackend.Models
         public decimal FinalIncome { get; set; }
 
         [BsonElement("coin")]
-        public required string Coin { get; set; }
+        public string? Coin { get; set; }
+
+        [BsonElement("firstOwner")]
+        public string? FirstOwner { get; set; }
 
         [BsonElement("status")]
         public int Status { get; set; }

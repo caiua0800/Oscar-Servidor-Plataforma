@@ -31,9 +31,8 @@ public class GatewayService
         var currentMonth = DateTime.Now.Month;
         var currentYear = DateTime.Now.Year;
 
-        MonthModel[] totalWithdrawalsLastFourMonths = new MonthModel[5]; // Tamanho aumentado para 5
+        MonthModel[] totalWithdrawalsLastFourMonths = new MonthModel[5]; 
 
-        // Preenche a entrada do mês atual
         {
             double totalNormalWithdrawalsAux = all_withdrawals
                 .Where(w => w.Status == 2 &&

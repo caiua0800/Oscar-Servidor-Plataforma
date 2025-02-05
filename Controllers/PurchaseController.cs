@@ -75,6 +75,43 @@ namespace DotnetBackend.Controllers
             return Ok(purchases);
         }
 
+        [HttpGet("6monthsData")]
+        public async Task<IActionResult> Get6MonthsData()
+        {
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
+
+            var data = await _purchaseService.GetLastSixMonthsPurchaseDataAsync();
+            if (data == null)
+            {
+                return NoContent();
+            }
+            return Ok(data);
+        }
+
+
+        [HttpGet("summary")]
+        public async Task<IActionResult> GetSummary()
+        {
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            if (!_authService.VerifyIfAdminToken(token))
+            {
+                return Forbid("Você não é ela");
+            }
+
+            var data = await _purchaseService.GetPurchaseSummaryForCurrentMonthAsync();
+            if (data == null)
+            {
+                return NoContent();
+            }
+            return Ok(data);
+        }
+
         [HttpGet("verify/{id}/{ticketId}")]
         public async Task<IActionResult> VerifyPayment(string id, string ticketId)
         {
@@ -139,6 +176,28 @@ namespace DotnetBackend.Controllers
             }
 
             var result = await _purchaseService.UpdateStatus(id, newStatus);
+            if (!result)
+            {
+                return NotFound();
+            }
+            return NoContent();
+        }
+
+        [HttpPut("{id}/freeWithdraw/{freeStatus}")]
+        public async Task<IActionResult> UpdateLiberarENegarSaque(string id, bool freeStatus)
+        {
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+            
+            bool verificado =  await _authService.VerifyPermissionAdmin(token, "ContratoEdit");
+
+            if (!verificado)
+            {
+                return Forbid("Você não é permitido");
+            }
+
+            var result = await _purchaseService.UpdateFreeWithdraw(id, freeStatus);
             if (!result)
             {
                 return NotFound();

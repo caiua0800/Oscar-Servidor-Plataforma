@@ -11,15 +11,21 @@ namespace DotnetBackend.Controllers
     {
         private readonly AuthService _authService;
 
-        public AuthController(AuthService authService)
+        private readonly ConnectionIpService _connectionIpService;
+
+        public AuthController(AuthService authService, ConnectionIpService connectionIpService)
         {
             _authService = authService;
+            _connectionIpService = connectionIpService;
         }
 
         [HttpPost("token")]
         public async Task<IActionResult> GenerateToken([FromBody] UserLogin login)
         {
-            return await _authService.GenerateTokenAsync(login); // Delegando a chamada para o AuthService
+            var userIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+            await _connectionIpService.RegisterIpAsync(userIp);
+            Console.WriteLine($"IP registrado: {userIp}");
+            return await _authService.GenerateTokenAsync(login);
         }
 
         [HttpGet("verify/{token}")]
@@ -34,6 +40,41 @@ namespace DotnetBackend.Controllers
 
 
             return Ok(response);
+        }
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetAdminByToken()
+        {
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var admin = await _authService.GetAdminByToken(token);
+            if (admin == null)
+            {
+                return NotFound("Admin não encontrado.");
+            }
+
+            return Ok(admin);
+        }
+
+        [HttpGet("verify-permission/{permission}")]
+        public async Task<IActionResult> GetAdminByToken(string permission)
+        {
+            var token = HttpContext.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
+
+            var admin = await _authService.GetAdminByToken(token);
+            if (admin == null)
+            {
+                return NotFound("Admin não encontrado.");
+            }
+
+            if (admin.PermissionLevel.Contains(permission) || admin.PermissionLevel.Contains("All"))
+            {
+                return Ok("O Admin Tem Permissão.");
+            }
+            else
+            {
+                return Forbid("O Admin Não Possui Permissão");
+            }
         }
 
         [HttpGet("verify-if/{token}")]

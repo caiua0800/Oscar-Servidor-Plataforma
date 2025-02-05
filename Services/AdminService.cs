@@ -36,6 +36,24 @@ namespace DotnetBackend.Services
             var normalizedId = id.Trim();
             return await _admins.Find(c => c.Id == normalizedId).FirstOrDefaultAsync();
         }
+        
+        public async Task<bool> ChangePermissions(string id, string newPermission)
+        {
+            var normalizedId = id.Trim();
+            var currentAdmin = await _admins.Find(c => c.Id == normalizedId).FirstOrDefaultAsync();
+
+            if (currentAdmin == null)
+            {
+                throw new Exception("Admin não encontrado.");
+            }
+
+            currentAdmin.PermissionLevel = newPermission;
+            var updateDefinition = Builders<Admin>.Update.Set(c => c.PermissionLevel, newPermission);
+
+            var result = await _admins.UpdateOneAsync(a => a.Id == normalizedId, updateDefinition);
+
+            return result.ModifiedCount > 0;
+        }
 
         public async Task<Admin> CreateAdminAsync(Admin admin, string password)
         {

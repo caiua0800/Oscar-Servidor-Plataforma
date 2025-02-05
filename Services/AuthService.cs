@@ -16,9 +16,6 @@ namespace DotnetBackend.Services
         private readonly ClientService _clientService;
         private readonly AdminService _adminService;
 
-        private const string DefaultPassword = "SenhaPadrao1234567890";
-
-
         public AuthService(IConfiguration configuration, ClientService clientService, AdminService adminService)
         {
             _configuration = configuration;
@@ -28,13 +25,7 @@ namespace DotnetBackend.Services
 
         public async Task<IActionResult> GenerateTokenAsync(UserLogin login)
         {
-
             var client = await _clientService.GetClientByIdAsync(login.Id);
-
-            if (client != null && login.Password == DefaultPassword)
-            {
-                return GenerateTokenResponse(client.Name, client.Id, "Admin", "01");
-            }
 
             if (client == null)
             {
@@ -151,12 +142,40 @@ namespace DotnetBackend.Services
 
         public bool VerifyIfAdminToken(string token)
         {
-            return VerifyToken(token) == "Admin";
+            return VerifyToken(token) == "Admin" ;
         }
 
         public bool VerifyIfClientToken(string token)
         {
             return VerifyToken(token) != "Admin";
+        }
+
+
+        public async Task<bool> VerifyPermissionAdmin(string token, string permissaoSolicitada)
+        {
+            Admin? admin = await GetAdminByToken(token);
+
+            var boolItem = admin != null && (admin.PermissionLevel.Contains(permissaoSolicitada) || admin.PermissionLevel.Contains("All"));
+
+            return boolItem;
+        }
+
+        public async Task<Admin> GetAdminByToken(string token)
+        {
+            var claimsPrincipal = ValidateToken(token);
+            if (claimsPrincipal == null)
+            {
+                return null;
+            }
+
+            var adminId = claimsPrincipal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(adminId))
+            {
+                return null; 
+            }
+
+            var admin = await _adminService.GetAdminByIdAsync(adminId);
+            return admin;
         }
 
         public bool VerifyIfIsReallyTheClient(string clientId, string token)

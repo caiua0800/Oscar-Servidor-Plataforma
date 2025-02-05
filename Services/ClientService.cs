@@ -14,15 +14,18 @@ namespace DotnetBackend.Services
     public class ClientService
     {
         private readonly IMongoCollection<Client> _clients;
-        private readonly EmailService _emailService; // Adicione esta linha
-        private readonly ExtractService _extractService; // Adicione esta linha
+        private readonly EmailService _emailService;
+        private readonly ExtractService _extractService;
+        private readonly BalanceHistoryService _balanceHistoryService;
 
 
-        public ClientService(MongoDbService mongoDbService, EmailService emailService, ExtractService extractService) // Modifique o construtor
+        public ClientService(MongoDbService mongoDbService, EmailService emailService,
+         ExtractService extractService, BalanceHistoryService balanceHistoryService)
         {
             _clients = mongoDbService.GetCollection<Client>("Clients");
-            _emailService = emailService; // Inicialize a instância de EmailService
+            _emailService = emailService;
             _extractService = extractService;
+            _balanceHistoryService = balanceHistoryService;
         }
 
         public async Task<Client> CreateClientAsync(Client client, string password)
@@ -45,6 +48,10 @@ namespace DotnetBackend.Services
             client.Status = 1;
             Console.WriteLine($"Data de Criação antes da inserção: {client.DateCreated}");
             await _clients.InsertOneAsync(client);
+            BalanceHistory balll = new BalanceHistory();
+            balll.ClientId = client.Id;
+            balll.Current = 0;
+            await _balanceHistoryService.CreateBalanceHistoryAsync(balll);
 
             try
             {
@@ -223,8 +230,8 @@ namespace DotnetBackend.Services
 
             client.WithdrawFromExtraBalance(amount);
 
-            var extract = new Extract($"Valor de R$${amount} retirado do Extra Balance do cliente com id: ${clientId}. CANCELAMENTO INDICAÇÃO", amount, clientId);
-            await _extractService.CreateExtractAsync(extract);
+            // var extract = new Extract($"Valor de R$${amount} retirado do Extra Balance do cliente com id: ${clientId}", amount, clientId);
+            // await _extractService.CreateExtractAsync(extract);
             var updateDefinition = Builders<Client>.Update.Set(c => c.ExtraBalance, client.ExtraBalance);
             var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
             return result.ModifiedCount > 0;
@@ -360,6 +367,38 @@ namespace DotnetBackend.Services
             return result.ModifiedCount > 0;
         }
 
+        public async Task<bool> RemovePurchaseAsync(string clientId, string purchaseId)
+        {
+            var client = await GetClientByIdAsync(clientId);
+            if (client == null)
+            {
+                throw new InvalidOperationException("Cliente não encontrado.");
+            }
+
+            if (client.WalletExtract == null)
+            {
+                client.WalletExtract = new WalletExtract();
+            }
+
+            if (client.WalletExtract.Purchases != null && client.WalletExtract.Purchases.Count > 0)
+            {
+                bool removed = client.WalletExtract.Purchases.Remove(purchaseId);
+                if (!removed)
+                {
+                    throw new InvalidOperationException("Compra não encontrada.");
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Não há compras para remover.");
+            }
+
+            var updateDefinition = Builders<Client>.Update.Set(c => c.WalletExtract.Purchases, client.WalletExtract.Purchases);
+
+            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+            return result.ModifiedCount > 0;
+        }
+
         public async Task<bool> AddWithdrawalAsync(string clientId, string withdrawalId)
         {
             var client = await GetClientByIdAsync(clientId);
@@ -398,25 +437,24 @@ namespace DotnetBackend.Services
             return result.ModifiedCount > 0;
         }
 
-        public async Task<bool> RemovePurchaseAsync(string clientId, string purchaseId)
-        {
-            var client = await GetClientByIdAsync(clientId);
-            if (client == null)
-            {
-                throw new InvalidOperationException("Cliente não encontrado.");
-            }
+        // public async Task<bool> RemovePurchaseAsync(string clientId, string purchaseId)
+        // {
+        //     var client = await GetClientByIdAsync(clientId);
+        //     if (client == null)
+        //     {
+        //         throw new InvalidOperationException("Cliente não encontrado.");
+        //     }
 
-            if (client.WalletExtract.Purchases.Contains(purchaseId))
-            {
-                client.WalletExtract.Purchases.Remove(purchaseId);
-            }
+        //     if (client.WalletExtract.Purchases.Contains(purchaseId))
+        //     {
+        //         client.WalletExtract.Purchases.Remove(purchaseId);
+        //     }
 
-            var updateDefinition = Builders<Client>.Update.Set(c => c.WalletExtract.Purchases, client.WalletExtract.Purchases);
+        //     var updateDefinition = Builders<Client>.Update.Set(c => c.WalletExtract.Purchases, client.WalletExtract.Purchases);
 
-            var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
-            return result.ModifiedCount > 0;
-        }
-
+        //     var result = await _clients.UpdateOneAsync(c => c.Id == clientId, updateDefinition);
+        //     return result.ModifiedCount > 0;
+        // }
 
         public async Task<bool> VerifyPasswordAsync(string clientId, string password)
         {

@@ -29,11 +29,12 @@ builder.Services.AddSingleton<MongoDbService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins", builder =>
-        builder.AllowAnyOrigin()   // Permite todas as origens
-               .AllowAnyMethod()   // Permite todos os métodos (GET, POST, etc.)
-               .AllowAnyHeader());  // Permite todos os cabeçalhos
+        builder.AllowAnyOrigin()   
+               .AllowAnyMethod()   
+               .AllowAnyHeader()); 
 });
 
+builder.Services.AddScoped<BuySolicitationService>();
 builder.Services.AddScoped<VendaService>();
 builder.Services.AddScoped<ClientService>();
 builder.Services.AddScoped<PurchaseService>();
@@ -56,6 +57,8 @@ builder.Services.AddScoped<PasswordResetService>();
 builder.Services.AddScoped<TokenService>();
 builder.Services.AddScoped<RelatorioService>();
 builder.Services.AddScoped<ConsultorService>();
+builder.Services.AddScoped<BalanceHistoryService>();
+builder.Services.AddScoped<ConnectionIpService>();
 
 
 builder.Services.AddScoped<EmailService>(provider =>
@@ -87,12 +90,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Configuração do Swagger
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configurações para ambiente de desenvolvimento
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -108,21 +109,20 @@ app.UseCors("AllowAllOrigins");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Configuração para WebSocket
-app.UseWebSockets();
-app.Use(async (context, next) =>
-{
-    if (context.WebSockets.IsWebSocketRequest)
-    {
-        var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-        var webSocketHandler = context.RequestServices.GetRequiredService<WebSocketHandler>();
-        await webSocketHandler.HandleWebSocketAsync(webSocket);
-    }
-    else
-    {
-        await next();
-    }
-});
+// app.UseWebSockets();
+// app.Use(async (context, next) =>
+// {
+//     if (context.WebSockets.IsWebSocketRequest)
+//     {
+//         var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+//         var webSocketHandler = context.RequestServices.GetRequiredService<WebSocketHandler>();
+//         await webSocketHandler.HandleWebSocketAsync(webSocket);
+//     }
+//     else
+//     {
+//         await next();
+//     }
+// });
 
 app.MapControllers();
 app.Run();

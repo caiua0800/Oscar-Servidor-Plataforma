@@ -2,6 +2,7 @@ using MongoDB.Driver;
 using DotnetBackend.Models;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace DotnetBackend.Services;
 
@@ -27,7 +28,7 @@ public class WithdrawalService
         _systemConfigService = systemConfigService;
     }
 
-     public async Task<Withdrawal> CreateWithdrawalAsync(Withdrawal withdrawal, bool isAdmin)
+    public async Task<Withdrawal> CreateWithdrawalAsync(Withdrawal withdrawal, bool isAdmin)
     {
 
         if (withdrawal.DateCreated == null)
@@ -39,7 +40,7 @@ public class WithdrawalService
         }
 
         withdrawal.WithdrawalId = "W" + await _counterService.GetNextSequenceAsync("withdraw");
-        withdrawal.AmountWithdrawnReceivable = withdrawal.AmountWithdrawn - (withdrawal.AmountWithdrawn*0.04);
+        withdrawal.AmountWithdrawnReceivable = withdrawal.AmountWithdrawn - (withdrawal.AmountWithdrawn * 0.04);
 
         Client? client = await _clientService.GetClientByIdAsync(withdrawal.ClientId);
 
@@ -61,7 +62,8 @@ public class WithdrawalService
             withdrawal.WithdrawnItems.Add("Extra Balance");
             valorASerRetirado = 0;
 
-        }else if (client.ExtraBalance > 0)
+        }
+        else if (client.ExtraBalance > 0)
         {
             valorASerRetirado -= (decimal)client.ExtraBalance;
             await _clientService.WithdrawFromExtraBalanceAsync(withdrawal.ClientId, (decimal)client.ExtraBalance);
@@ -121,7 +123,6 @@ public class WithdrawalService
         return withdrawal;
     }
 
-
     public async Task<Withdrawal?> GetWithdrawalByIdAsync(string id)
     {
         var normalizedId = id.Trim();
@@ -130,7 +131,7 @@ public class WithdrawalService
 
     public async Task<List<Withdrawal>> GetAllWithdrawalsAsync()
     {
-        return await _withdrawals.Find(_ => true).ToListAsync(); // Retorna todos os saques
+        return await _withdrawals.Find(_ => true).ToListAsync();
     }
 
     public async Task<List<Withdrawal>> GetAllWithdrawalsFilteredAsync(int dateFilter)
@@ -158,7 +159,7 @@ public class WithdrawalService
         if (saqueEncontrado == null)
         {
             Console.WriteLine($"Withdrawal with ID {normalizedId} not found.");
-            return false; // Saque não encontrado, retorna falso
+            return false;
         }
 
         var deleteResult = await _withdrawals.DeleteOneAsync(w => w.WithdrawalId == normalizedId);
@@ -174,10 +175,6 @@ public class WithdrawalService
         {
             try
             {
-                // if (newStatus == 2)
-                // {
-                //     await _bankAccountService.WithdrawFromBalanceAsync(withdrawalId, (decimal)existingWithdrawal.AmountWithdrawn);
-                // }
 
                 if (newStatus == 3)
                 {
@@ -196,7 +193,6 @@ public class WithdrawalService
             }
             catch (Exception ex)
             {
-                // Log the error or handle it accordingly
                 Console.WriteLine($"Erro ao atualizar status ou processar a retirada: {ex.Message}");
                 return false; // Retorna falso se houve um erro
             }

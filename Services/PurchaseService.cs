@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Net.Http.Headers;
 using System.Text.Json.Serialization;
+using System.Globalization;
 
 
 namespace DotnetBackend.Services
@@ -35,14 +36,14 @@ namespace DotnetBackend.Services
             purchase.PurchaseId = "A" + await _counterService.GetNextSequenceAsync("purchases");
             var contractId = "Model" + purchase.Type;
             var contract = await _contractService.GetContractByIdAsync(contractId);
-            Client client = await _clientService.GetClientByIdAsync(purchase.ClientId);
+            Client? client = await _clientService.GetClientByIdAsync(purchase.ClientId);
 
             decimal value;
             string descrip;
             string title;
             double gain;
 
-            Console.WriteLine(purchase.ProductName);
+            purchase.ClientName = client.Name;
 
             if (purchase.Type == 0)
             {
@@ -54,7 +55,7 @@ namespace DotnetBackend.Services
                 {
                     gain = purchase.PercentageProfit;
                 }
-                else if (client.ClientProfit > 0)
+                else if (client?.ClientProfit > 0)
                 {
                     gain = (double)client.ClientProfit;
                 }
@@ -101,8 +102,7 @@ namespace DotnetBackend.Services
                 var jsonContent = JsonSerializer.Serialize(requestPayload);
                 var httpContent = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                // HttpResponseMessage response = await httpClient.PostAsync("http://servidoroscar.modelodesoftwae.com:3030/pix", httpContent);
-                HttpResponseMessage response = await httpClient.PostAsync("http://localhost:3030/pix", httpContent);
+                HttpResponseMessage response = await httpClient.PostAsync("http://localhost:4040/pix", httpContent);
 
 
                 if (response.IsSuccessStatusCode)
@@ -119,19 +119,34 @@ namespace DotnetBackend.Services
                 }
                 else
                 {
+
                     purchase.TicketPayment = null;
                     purchase.QrCode = null;
                     purchase.QrCodeBase64 = null;
                     purchase.TicketId = null;
                     purchase.ExpirationDate = null;
-    
+                    // throw new Exception($"Falha na requisição PIX: {response.ReasonPhrase}");
                 }
             }
 
             await _purchases.InsertOneAsync(purchase);
-            var extract = new Extract($"Compra {purchase.ProductName}", purchase.TotalPrice, purchase.ClientId);
+            var extract = new Extract($"Compra {purchase.ProductName}, ID %{purchase.PurchaseId}%", purchase.TotalPrice, purchase.ClientId);
             Console.WriteLine($"Compra {purchase.ProductName}");
             await _extractService.CreateExtractAsync(extract);
+            await _clientService.AddPurchaseAsync(purchase.ClientId, purchase.PurchaseId);
+
+            return purchase;
+        }
+
+        public async Task<Purchase> CreatePurchaseVendaAsync(Purchase purchase)
+        {
+
+            await _purchases.InsertOneAsync(purchase);
+            var extract = new Extract($"Compra {purchase.ProductName}, ID %{purchase.PurchaseId}% por book", purchase.TotalPrice, purchase.ClientId);
+            var client = await _clientService.GetClientByIdAsync(purchase.ClientId);
+            await _extractService.CreateExtractAsync(extract);
+            purchase.Status = 2;
+            purchase.ClientName = client.Name;
             await _clientService.AddPurchaseAsync(purchase.ClientId, purchase.PurchaseId);
 
             return purchase;
@@ -316,7 +331,15 @@ namespace DotnetBackend.Services
 
             existingPurchase.CurrentIncome += increasement;
 
-            var extract = new Extract($"Antecipação de lucro do contrato {purchaseId} no valor de R${increasement}", increasement, existingPurchase.ClientId);
+            if (existingPurchase.FirstIncreasement == null)
+            {
+                TimeZoneInfo brtZone = TimeZoneInfo.FindSystemTimeZoneById("E. South America Standard Time");
+                DateTime currentBrasiliaTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, brtZone);
+                existingPurchase.FirstIncreasement = currentBrasiliaTime;
+                existingPurchase.LastIncreasement = currentBrasiliaTime;
+            }
+
+            var extract = new Extract($"Antecipação de lucro do contrato %{purchaseId}% no valor de R${increasement}", increasement, existingPurchase.ClientId);
             await _extractService.CreateExtractAsync(extract);
 
             await _clientService.AddToBalanceAsync(existingPurchase.ClientId, increasement);
@@ -405,7 +428,7 @@ namespace DotnetBackend.Services
             await _purchases.UpdateOneAsync(p => p.PurchaseId == purchaseId, updateDefinition);
             Console.WriteLine($"Compra com ID {purchaseId} atualizada com sucesso.");
 
-            var extract = new Extract($"Incremento no contrato {purchaseId} de R${amount}", amount, existingClient.Id);
+            var extract = new Extract($"Incremento no contrato %{purchaseId}% de R${amount}", amount, existingClient.Id);
             await _extractService.CreateExtractAsync(extract);
             Console.WriteLine($"Extrato criado para o cliente {existingClient.Id}.");
 
@@ -476,9 +499,31 @@ namespace DotnetBackend.Services
                 {
                     await _clientService.AddToBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
                     await _clientService.AddToBlockedBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
-                    await _bankAccountService.AddToBalanceAsync(purchaseId, existingPurchase.AmountPaid);
+                    // await _bankAccountService.AddToBalanceAsync(purchaseId, existingPurchase.AmountPaid);
                     Console.WriteLine($"Saldo do cliente {existingPurchase.ClientId} atualizado com o valor {existingPurchase.TotalPrice}");
                 }
+
+                return true;
+            }
+            else
+            {
+                Console.WriteLine($"Erro ao encontrar contrato {purchaseId}");
+                return false;
+            }
+        }
+
+         public async Task<bool> UpdateFreeWithdraw(string purchaseId, bool newStatus)
+        {
+            var existingPurchase = await GetPurchaseByIdAsync(purchaseId);
+
+            if (existingPurchase != null)
+            {
+                existingPurchase.FreeWithdraw = newStatus;
+
+                var updateDefinition = Builders<Purchase>.Update.Set(p => p.FreeWithdraw, newStatus);
+                await _purchases.UpdateOneAsync(p => p.PurchaseId == purchaseId, updateDefinition);
+
+                Console.WriteLine($"Contrato encontrado: {existingPurchase.PurchaseId}, novo Free Wothdraw {newStatus}");
 
                 return true;
             }
@@ -545,12 +590,9 @@ namespace DotnetBackend.Services
 
                 await _purchases.UpdateOneAsync(p => p.PurchaseId == purchaseId, updateDefinition);
 
-                Console.WriteLine($"Contrato #{existingPurchase.PurchaseId} cancelado com sucesso");
-
-                await _clientService.WithdrawFromBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
                 await _clientService.WithdrawFromBlockedBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
-                Console.WriteLine($"Saldo do cliente {existingPurchase.ClientId} decrementado no valor de {existingPurchase.TotalPrice}");
-                var extract = new Extract($"Contrato #{purchaseId} cancelado.", existingPurchase.TotalPrice, existingPurchase.ClientId);
+                await _clientService.WithdrawFromBalanceAsync(existingPurchase.ClientId, existingPurchase.TotalPrice);
+                var extract = new Extract($"Contrato %{purchaseId}% cancelado.", existingPurchase.TotalPrice, existingPurchase.ClientId);
                 await _extractService.CreateExtractAsync(extract);
                 return true;
             }
@@ -564,6 +606,93 @@ namespace DotnetBackend.Services
         public static implicit operator PurchaseService(WithdrawalService v)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<PurchaseSummary> GetPurchaseSummaryForCurrentMonthAsync()
+        {
+            var currentDate = DateTime.UtcNow;
+            var startOfMonth = new DateTime(currentDate.Year, currentDate.Month, 1);
+            var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
+
+            var qttPurchasesPending = await _purchases
+                .CountDocumentsAsync(p => p.Status == 1 && p.PurchaseDate >= startOfMonth && p.PurchaseDate <= endOfMonth);
+
+            var qttPurchasesPaid = await _purchases
+                .CountDocumentsAsync(p => p.Status == 2 && p.PurchaseDate >= startOfMonth && p.PurchaseDate <= endOfMonth);
+
+            var qttPurchasesEnding = await _purchases
+                .CountDocumentsAsync(p => p.EndContractDate >= startOfMonth && p.EndContractDate <= endOfMonth);
+
+            return new PurchaseSummary
+            {
+                QttPurchasesPending = (int)qttPurchasesPending,
+                QttPurchasesPaid = (int)qttPurchasesPaid,
+                QttPurchasesEnding = (int)qttPurchasesEnding
+            };
+        }
+
+        public async Task<LastSixMonthsPurchaseData> GetLastSixMonthsPurchaseDataAsync()
+        {
+            // Obtém a data atual e calcula a data de início (6 meses atrás)
+            var currentDate = DateTime.UtcNow;
+            var startDate = currentDate.AddMonths(-6);
+
+            // Obtém todas as compras com status 2 (ativas) e que foram criadas nos últimos 6 meses
+            var allPurchases = await _purchases
+                .Find(p => p.Status == 2 && p.PurchaseDate >= startDate)
+                .ToListAsync();
+
+            // Dicionário para armazenar o total de compras por mês
+            var monthlyData = new Dictionary<string, (decimal TotalValue, int PurchasesQtt)>();
+
+            // Preenche o dicionário com os meses e valores iniciais (0)
+            for (int i = 5; i >= 0; i--)
+            {
+                var monthDate = currentDate.AddMonths(-i);
+                var monthKey = monthDate.ToString("MMM", CultureInfo.CreateSpecificCulture("pt-BR")).ToUpper();
+                monthlyData[monthKey] = (TotalValue: 0, PurchasesQtt: 0);
+            }
+
+            foreach (var purchase in allPurchases)
+            {
+                if (purchase.PurchaseDate.HasValue)
+                {
+                    var monthKey = purchase.PurchaseDate.Value.ToString("MMM", CultureInfo.CreateSpecificCulture("pt-BR")).ToUpper();
+                    if (monthlyData.ContainsKey(monthKey))
+                    {
+                        monthlyData[monthKey] = (
+                            TotalValue: monthlyData[monthKey].TotalValue + purchase.AmountPaid,
+                            PurchasesQtt: monthlyData[monthKey].PurchasesQtt + 1
+                        );
+                    }
+                }
+            }
+
+            var monthsData = monthlyData
+                .Select(kv => new MonthData
+                {
+                    MonthName = kv.Key,
+                    MonthValue = kv.Value.TotalValue,
+                    PurchasesQtt = kv.Value.PurchasesQtt
+                })
+                .ToList();
+
+            decimal lastMonthValue = monthsData.Last().MonthValue;
+            decimal lastlastMonthValue = monthsData[4].MonthValue;
+
+            decimal percentageChange = 0;
+
+            if (lastMonthValue != 0)
+            {
+                percentageChange = lastlastMonthValue == 0 ? 0 : ((lastMonthValue - lastlastMonthValue) / lastlastMonthValue) * 100;
+            }
+
+            return new LastSixMonthsPurchaseData
+            {
+                NumberOfMonths = 6,
+                PercentageChange = percentageChange,
+                MonthsData = monthsData
+            };
         }
 
     }

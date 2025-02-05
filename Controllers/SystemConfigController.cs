@@ -92,7 +92,7 @@ public class SystemConfigController : ControllerBase
         var purchase = await _systemConfigService.GetSystemConfigByNameAsync(name);
         if (purchase == null)
         {
-            return NotFound();
+            return NoContent();
         }
         return Ok(purchase);
     }

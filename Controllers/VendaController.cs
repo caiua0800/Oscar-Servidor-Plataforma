@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace DotnetBackend.Controllers
 {
-    [Authorize(Roles = "Client, Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class VendaController : ControllerBase
@@ -19,7 +18,6 @@ namespace DotnetBackend.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> Create([FromBody] Venda venda)
         {
             if (venda == null)
@@ -33,7 +31,6 @@ namespace DotnetBackend.Controllers
 
 
         [HttpGet]
-        [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetAll()
         {
             var vendas = await _vendaService.GetAllVendasAsync();
@@ -41,7 +38,6 @@ namespace DotnetBackend.Controllers
         }
 
         [HttpGet("{id}")]
-        [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetVendaById(string id)
         {
             var venda = await _vendaService.GetVendaByIdAsync(id);
@@ -53,19 +49,17 @@ namespace DotnetBackend.Controllers
         }
 
         [HttpGet("client/{id}")]
-        [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> GetVendaByClientId(string id)
         {
-            var venda = await _vendaService.GetVendaByClientIdAsync(id);
+            var venda = await _vendaService.GetVendasByClientIdAsync(id);
             if (venda == null)
             {
-                return NotFound();
+                return NoContent();
             }
             return Ok(venda);
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Client, Admin")]
         public async Task<IActionResult> Delete(string id)
         {
             var result = await _vendaService.DeleteVendaAsync(id);
